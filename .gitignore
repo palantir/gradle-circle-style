@@ -1,0 +1,41 @@
+### Gradle ###
+
+.gradle
+**/build/
+
+
+### Java ###
+
+*.class
+*.log
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+
+### Eclipse ###
+
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+.classpath
+.factorypath
+.loadpath
+.metadata
+.recommenders
+.project
+.settings/
+/generated/
+
+
+### IntelliJ ###
+
+*.iml
+modules.xml
+.idea
+*.ipr
+*.iws
+

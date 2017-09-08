@@ -1,0 +1,27 @@
+plugins {
+  id 'java'
+  id 'eclipse'
+  id 'idea'
+  id 'org.inferred.processors' version '1.2.15'
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+sourceCompatibility = 1.7
+
+dependencies {
+  compile gradleApi()
+
+  processor 'org.inferred:freebuilder:1.14.4'
+
+  testCompile gradleTestKit()
+  testCompile 'com.github.stefanbirkner:system-rules:1.16.0'
+  testCompile 'com.google.guava:guava:23.0-android'
+  testCompile 'junit:junit:4.12'
+  testCompile 'org.assertj:assertj-core:2.8.0'
+  testCompile 'org.mockito:mockito-core:2.9.0'
+  testCompile 'me.nallar.whocalled:WhoCalled:1.1'
+}
