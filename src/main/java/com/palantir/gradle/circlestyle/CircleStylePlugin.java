@@ -64,7 +64,7 @@ public class CircleStylePlugin implements Plugin<Project> {
                         finalizer.setStyleTaskTimer(timer);
                         finalizer.setTargetFile(new File(
                                 new File(circleReportsDir, "checkstyle"),
-                                checkstyleTask.getName() + ".xml"));
+                                project.getName() + "-" + checkstyleTask.getName() + ".xml"));
 
                         checkstyleTask.finalizedBy(finalizer);
                     }

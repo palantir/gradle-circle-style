@@ -48,6 +48,7 @@ public class CircleStylePluginTests {
         env.set("TEST_CLASSPATH", pluginClasspath());
 
         copyTestFile("build.gradle", projectDir, "build.gradle");
+        copyTestFile("settings.gradle", projectDir, "settings.gradle");
         copyTestFile("checkstyle.xml", projectDir, "config/checkstyle/checkstyle.xml");
         copyTestFile("checkstyle-violating-class", projectDir, "src/main/java/com/example/MyClass.java");
 
@@ -57,7 +58,7 @@ public class CircleStylePluginTests {
                 .buildAndFail();
         assertThat(result.getOutput()).contains("Checkstyle rule violations were found");
 
-        File report = new File(reportsDir, "checkstyle/checkstyleMain.xml");
+        File report = new File(reportsDir, "checkstyle/foobar-checkstyleMain.xml");
         assertThat(report).exists();
         String reportXml = Files.asCharSource(report, UTF_8).read();
         assertThat(reportXml).contains("Name 'a_constant' must match pattern");
