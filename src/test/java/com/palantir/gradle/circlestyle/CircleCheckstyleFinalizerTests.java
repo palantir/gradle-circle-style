@@ -50,6 +50,8 @@ public class CircleCheckstyleFinalizerTests {
         Project project = ProjectBuilder.builder().withName("fooproject").withProjectDir(projectDir.getRoot()).build();
         Checkstyle checkstyle = createCheckstyleTask(project);
 
+        checkstyle.setDidWork(true);
+
         StyleTaskTimer timer = mock(StyleTaskTimer.class);
         when(timer.getTaskTimeNanos(checkstyle)).thenReturn(FAILED_CHECKSTYLE_TIME_NANOS);
 
@@ -67,6 +69,30 @@ public class CircleCheckstyleFinalizerTests {
         String expectedReport = Resources.toString(testFile("two-namecheck-failures-checkstyle-report.xml"), UTF_8);
 
         assertThat(report).isEqualTo(expectedReport);
+    }
+
+    @Test
+    public void doesNothingIfTaskSkipped() throws IOException, TransformerException {
+        Project project = ProjectBuilder.builder().withName("fooproject").withProjectDir(projectDir.getRoot()).build();
+        Checkstyle checkstyle = createCheckstyleTask(project);
+
+        checkstyle.setDidWork(false);
+
+        StyleTaskTimer timer = mock(StyleTaskTimer.class);
+        when(timer.getTaskTimeNanos(checkstyle)).thenReturn(FAILED_CHECKSTYLE_TIME_NANOS);
+
+        File targetFile = new File(projectDir.getRoot(), "reports/report.xml");
+
+        CircleCheckstyleFinalizer finalizer = (CircleCheckstyleFinalizer) project
+                .task(ImmutableMap.of("type", CircleCheckstyleFinalizer.class), "checkstyleTestCircleFinalizer");
+        finalizer.setCheckstyleTask(checkstyle);
+        finalizer.setStyleTaskTimer(timer);
+        finalizer.setTargetFile(targetFile);
+
+        finalizer.createCircleReport();
+
+        assertThat(targetFile).doesNotExist();
+        assertThat(finalizer.getDidWork()).isFalse();
     }
 
     private Checkstyle createCheckstyleTask(Project project) throws IOException {

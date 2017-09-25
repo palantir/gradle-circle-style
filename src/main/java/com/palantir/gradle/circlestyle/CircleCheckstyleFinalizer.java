@@ -67,6 +67,11 @@ class CircleCheckstyleFinalizer extends DefaultTask {
 
     @TaskAction
     public void createCircleReport() throws IOException, TransformerException {
+        if (!checkstyleTask.getDidWork()) {
+            setDidWork(false);
+            return;
+        }
+
         File rootDir = getProject().getRootProject().getProjectDir();
         String projectName = getProject().getName();
         File sourceReport = checkstyleTask.getReports().findByName("xml").getDestination();
