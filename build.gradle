@@ -2,6 +2,7 @@ plugins {
   id 'java'
   id 'eclipse'
   id 'idea'
+  id 'com.gradle.plugin-publish' version '0.9.7'
   id 'org.inferred.processors' version '1.2.15'
 }
 
@@ -24,4 +25,40 @@ dependencies {
   testCompile 'org.assertj:assertj-core:2.8.0'
   testCompile 'org.mockito:mockito-core:2.9.0'
   testCompile 'me.nallar.whocalled:WhoCalled:1.1'
+}
+
+group = 'com.palantir'
+if (System.env.CIRCLE_TAG) {
+  version = System.env.CIRCLE_TAG.replaceAll('^v', '')
+}
+
+pluginBundle {
+  website = 'https://github.com/palantir/gradle-circle-style'
+  vcsUrl = 'https://github.com/palantir/gradle-circle-style'
+
+  plugins {
+    circleStylePlugin {
+      displayName = 'Circle style plugin'
+      id = 'com.palantir.circle.style'
+      description = 'Integrating Gradle\'s checkstyle and findbugs output into Circle'
+      tags = ['java', 'circle', 'checkstyle', 'findbugs']
+    }
+  }
+}
+
+String envOrThrow(String key) {
+  def value = System.getenv(key)
+  if (!value) {
+    throw new RuntimeException("\$$key not set")
+  }
+  return value
+}
+
+// Read publication secrets from environment
+task setupPublishProperties {
+  tasks.publishPlugins.dependsOn it
+  doLast {
+    System.properties.setProperty('gradle.publish.key', envOrThrow('gradlePublishKey'))
+    System.properties.setProperty('gradle.publish.secret', envOrThrow('gradlePublishSecret'))
+  }
 }
