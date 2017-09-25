@@ -42,7 +42,16 @@ public class CircleStylePlugin implements Plugin<Project> {
             public void execute(final Project project) {
                 project.getTasks().withType(Checkstyle.class, new Action<Checkstyle>() {
                     @Override
-                    public void execute(Checkstyle checkstyleTask) {
+                    public void execute(final Checkstyle checkstyleTask) {
+                        // Ensure XML output is enabled
+                        checkstyleTask.doFirst(new Action<Task>() {
+                            @Override
+                            public void execute(Task task) {
+                                checkstyleTask.getReports().findByName("xml").setEnabled(true);
+                            }
+                        });
+
+                        // Configure the finalizer task
                         CircleCheckstyleFinalizer finalizer = createTask(
                                 project.getTasks(),
                                 checkstyleTask.getName() + "CircleFinalizer",
