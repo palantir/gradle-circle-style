@@ -41,7 +41,7 @@ import org.junit.rules.TemporaryFolder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 
-public class CircleCheckstyleFinalizerTests {
+public class CircleStyleFinalizerTests {
 
     @Rule public final TemporaryFolder projectDir = new TemporaryFolder();
 
@@ -57,9 +57,11 @@ public class CircleCheckstyleFinalizerTests {
 
         File targetFile = new File(projectDir.getRoot(), "reports/report.xml");
 
-        CircleCheckstyleFinalizer finalizer = (CircleCheckstyleFinalizer) project
-                .task(ImmutableMap.of("type", CircleCheckstyleFinalizer.class), "checkstyleTestCircleFinalizer");
-        finalizer.setCheckstyleTask(checkstyle);
+        CircleStyleFinalizer finalizer = (CircleStyleFinalizer) project
+                .task(ImmutableMap.of("type", CircleStyleFinalizer.class), "checkstyleTestCircleFinalizer");
+        finalizer.setReportParser(CheckstyleReportHandler.PARSER);
+        finalizer.setStyleTask(checkstyle);
+        finalizer.setReporting(checkstyle);
         finalizer.setStyleTaskTimer(timer);
         finalizer.setTargetFile(targetFile);
 
@@ -83,9 +85,11 @@ public class CircleCheckstyleFinalizerTests {
 
         File targetFile = new File(projectDir.getRoot(), "reports/report.xml");
 
-        CircleCheckstyleFinalizer finalizer = (CircleCheckstyleFinalizer) project
-                .task(ImmutableMap.of("type", CircleCheckstyleFinalizer.class), "checkstyleTestCircleFinalizer");
-        finalizer.setCheckstyleTask(checkstyle);
+        CircleStyleFinalizer finalizer = (CircleStyleFinalizer) project
+                .task(ImmutableMap.of("type", CircleStyleFinalizer.class), "checkstyleTestCircleFinalizer");
+        finalizer.setReportParser(CheckstyleReportHandler.PARSER);
+        finalizer.setStyleTask(checkstyle);
+        finalizer.setReporting(checkstyle);
         finalizer.setStyleTaskTimer(timer);
         finalizer.setTargetFile(targetFile);
 
@@ -101,7 +105,6 @@ public class CircleCheckstyleFinalizerTests {
 
         String originalReportXml = readTestFile("two-namecheck-failures-checkstyle.xml");
         String modifiedReportXml = originalReportXml.replace(ROOT.toString(), projectDir.getRoot().getCanonicalPath().toString());
-        System.out.println(modifiedReportXml);
         File modifiedReportFile = projectDir.newFile();
         Files.write(modifiedReportXml, modifiedReportFile, UTF_8);
 

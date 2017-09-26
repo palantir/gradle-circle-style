@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
@@ -41,15 +42,22 @@ public class CircleStylePluginTests {
     @Rule public final EnvironmentVariables env = new EnvironmentVariables();
     @Rule public final TemporaryFolder projectDir = new TemporaryFolder();
 
-    @Test
-    public void checkstyleIntegrationTest() throws IOException {
-        File reportsDir = new File(projectDir.getRoot(), "circle/reports");
+    private File reportsDir;
+
+    @Before
+    public void setUp() {
+        reportsDir = new File(projectDir.getRoot(), "circle/reports");
         env.set("CIRCLE_TEST_REPORTS", reportsDir.toString());
         env.set("TEST_CLASSPATH", pluginClasspath());
 
         copyTestFile("build.gradle", projectDir, "build.gradle");
         copyTestFile("settings.gradle", projectDir, "settings.gradle");
         copyTestFile("checkstyle.xml", projectDir, "config/checkstyle/checkstyle.xml");
+        copyTestFile("findbugsIncludeFilter.xml", projectDir, "config/findbugs/findbugsIncludeFilter.xml");
+    }
+
+    @Test
+    public void checkstyleIntegrationTest() throws IOException {
         copyTestFile("checkstyle-violating-class", projectDir, "src/main/java/com/example/MyClass.java");
 
         BuildResult result = GradleRunner.create()
@@ -62,7 +70,22 @@ public class CircleStylePluginTests {
         assertThat(report).exists();
         String reportXml = Files.asCharSource(report, UTF_8).read();
         assertThat(reportXml).contains("Name 'a_constant' must match pattern");
-        System.out.println(reportXml);
+    }
+
+    @Test
+    public void findbugsIntegrationTest() throws IOException {
+        copyTestFile("findbugs-violating-class", projectDir, "src/main/java/com/example/MyClass.java");
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.getRoot())
+                .withArguments("--stacktrace", "findbugsMain")
+                .buildAndFail();
+        assertThat(result.getOutput()).contains("FindBugs rule violations were found");
+
+        File report = new File(reportsDir, "findbugs/foobar-findbugsMain.xml");
+        assertThat(report).exists();
+        String reportXml = Files.asCharSource(report, UTF_8).read();
+        assertThat(reportXml).contains("methodA() invokes System.exit");
     }
 
     private static String pluginClasspath() {

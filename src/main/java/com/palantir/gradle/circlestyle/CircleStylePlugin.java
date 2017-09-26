@@ -23,6 +23,9 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.UnknownTaskException;
 import org.gradle.api.plugins.quality.Checkstyle;
+import org.gradle.api.plugins.quality.FindBugs;
+import org.gradle.api.plugins.quality.FindBugsXmlReport;
+import org.gradle.api.reporting.SingleFileReport;
 import org.gradle.api.tasks.TaskContainer;
 
 public class CircleStylePlugin implements Plugin<Project> {
@@ -42,35 +45,89 @@ public class CircleStylePlugin implements Plugin<Project> {
             public void execute(final Project project) {
                 project.getTasks().withType(Checkstyle.class, new Action<Checkstyle>() {
                     @Override
-                    public void execute(final Checkstyle checkstyleTask) {
-                        // Ensure XML output is enabled
-                        checkstyleTask.doFirst(new Action<Task>() {
-                            @Override
-                            public void execute(Task task) {
-                                checkstyleTask.getReports().findByName("xml").setEnabled(true);
-                            }
-                        });
-
-                        // Configure the finalizer task
-                        CircleCheckstyleFinalizer finalizer = createTask(
-                                project.getTasks(),
-                                checkstyleTask.getName() + "CircleFinalizer",
-                                CircleCheckstyleFinalizer.class);
-                        if (finalizer == null) {
-                            // Already registered (happens if the user applies us to the root project and subprojects)
-                            return;
-                        }
-                        finalizer.setCheckstyleTask(checkstyleTask);
-                        finalizer.setStyleTaskTimer(timer);
-                        finalizer.setTargetFile(new File(
-                                new File(circleReportsDir, "checkstyle"),
-                                project.getName() + "-" + checkstyleTask.getName() + ".xml"));
-
-                        checkstyleTask.finalizedBy(finalizer);
+                    public void execute(Checkstyle checkstyleTask) {
+                        configureCheckstyleTask(project, checkstyleTask, circleReportsDir, timer);
+                    }
+                });
+                project.getTasks().withType(FindBugs.class, new Action<FindBugs>() {
+                    @Override
+                    public void execute(FindBugs findbugsTask) {
+                        configureFindbugsTask(project, findbugsTask, circleReportsDir, timer);
                     }
                 });
             }
         });
+    }
+
+    private void configureCheckstyleTask(
+            final Project project,
+            final Checkstyle checkstyleTask,
+            final String circleReportsDir,
+            final StyleTaskTimer timer) {
+        // Ensure XML output is enabled
+        checkstyleTask.doFirst(new Action<Task>() {
+            @Override
+            public void execute(Task task) {
+                checkstyleTask.getReports().findByName("xml").setEnabled(true);
+            }
+        });
+
+        // Configure the finalizer task
+        CircleStyleFinalizer finalizer = createTask(
+                project.getTasks(),
+                checkstyleTask.getName() + "CircleFinalizer",
+                CircleStyleFinalizer.class);
+        if (finalizer == null) {
+            // Already registered (happens if the user applies us to the root project and subprojects)
+            return;
+        }
+        finalizer.setReportParser(CheckstyleReportHandler.PARSER);
+        finalizer.setStyleTask(checkstyleTask);
+        finalizer.setReporting(checkstyleTask);
+        finalizer.setStyleTaskTimer(timer);
+        finalizer.setTargetFile(new File(
+                new File(circleReportsDir, "checkstyle"),
+                project.getName() + "-" + checkstyleTask.getName() + ".xml"));
+
+        checkstyleTask.finalizedBy(finalizer);
+    }
+
+    private void configureFindbugsTask(
+            final Project project,
+            final FindBugs findbugsTask,
+            final String circleReportsDir,
+            final StyleTaskTimer timer) {
+        // Ensure XML output is enabled
+        findbugsTask.doFirst(new Action<Task>() {
+            @Override
+            public void execute(Task task) {
+                for (SingleFileReport report : findbugsTask.getReports()) {
+                    report.setEnabled(false);
+                }
+                FindBugsXmlReport xmlReport = (FindBugsXmlReport) findbugsTask.getReports().findByName("xml");
+                xmlReport.setEnabled(true);
+                xmlReport.setWithMessages(true);
+            }
+        });
+
+        // Configure the finalizer task
+        CircleStyleFinalizer finalizer = createTask(
+                project.getTasks(),
+                findbugsTask.getName() + "CircleFinalizer",
+                CircleStyleFinalizer.class);
+        if (finalizer == null) {
+            // Already registered (happens if the user applies us to the root project and subprojects)
+            return;
+        }
+        finalizer.setReportParser(FindBugsReportHandler.PARSER);
+        finalizer.setStyleTask(findbugsTask);
+        finalizer.setReporting(findbugsTask);
+        finalizer.setStyleTaskTimer(timer);
+        finalizer.setTargetFile(new File(
+                new File(circleReportsDir, "findbugs"),
+                project.getName() + "-" + findbugsTask.getName() + ".xml"));
+
+        findbugsTask.finalizedBy(finalizer);
     }
 
     private static <T extends Task> T createTask(TaskContainer tasks, String preferredName, Class<T> type) {

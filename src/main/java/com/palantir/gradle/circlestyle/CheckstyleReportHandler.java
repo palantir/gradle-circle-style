@@ -32,17 +32,20 @@ import org.xml.sax.helpers.DefaultHandler;
 
 class CheckstyleReportHandler extends DefaultHandler {
 
-    public static List<Failure> loadCheckstyleFailures(InputStream report) {
-        try {
-            CheckstyleReportHandler handler = new CheckstyleReportHandler();
-            XMLReader xmlReader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
-            xmlReader.setContentHandler(handler);
-            xmlReader.parse(new InputSource(report));
-            return handler.failures();
-        } catch (SAXException | ParserConfigurationException | IOException e) {
-            throw new AssertionError(e);
+    public static ReportParser PARSER = new ReportParser() {
+        @Override
+        public List<Failure> loadFailures(InputStream report) {
+            try {
+                CheckstyleReportHandler handler = new CheckstyleReportHandler();
+                XMLReader xmlReader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
+                xmlReader.setContentHandler(handler);
+                xmlReader.parse(new InputSource(report));
+                return handler.failures();
+            } catch (SAXException | ParserConfigurationException | IOException e) {
+                throw new AssertionError(e);
+            }
         }
-    }
+    };
 
     private final List<Failure> failures = new ArrayList<>();
     private File file;

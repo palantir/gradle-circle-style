@@ -21,6 +21,7 @@ import java.util.Map;
 import org.gradle.api.Task;
 import org.gradle.api.execution.TaskExecutionListener;
 import org.gradle.api.plugins.quality.Checkstyle;
+import org.gradle.api.plugins.quality.FindBugs;
 import org.gradle.api.tasks.TaskState;
 
 class StyleTaskTimer implements TaskExecutionListener {
@@ -54,6 +55,6 @@ class StyleTaskTimer implements TaskExecutionListener {
     }
 
     private static boolean isStyleTask(Task task) {
-        return task instanceof Checkstyle;
+        return task instanceof Checkstyle || task instanceof FindBugs;
     }
 }

@@ -1,6 +1,7 @@
 plugins {
   id 'java'
   id 'checkstyle'
+  id 'findbugs'
 }
 
 
@@ -22,6 +23,17 @@ repositories {
 sourceCompatibility = 1.7
 
 tasks.withType(Checkstyle) {
+  reports {
+    xml.enabled = false
+    html.enabled = true
+  }
+}
+
+findbugs {
+  includeFilter = file("config/findbugs/findbugsIncludeFilter.xml")
+}
+
+tasks.withType(FindBugs) {
   reports {
     xml.enabled = false
     html.enabled = true

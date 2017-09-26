@@ -15,7 +15,6 @@
  */
 package com.palantir.gradle.circlestyle;
 
-import static com.palantir.gradle.circlestyle.CheckstyleReportHandler.loadCheckstyleFailures;
 import static com.palantir.gradle.circlestyle.JUnitReportCreator.createReport;
 
 import java.io.File;
@@ -28,25 +27,46 @@ import javax.inject.Inject;
 import javax.xml.transform.TransformerException;
 
 import org.gradle.api.DefaultTask;
-import org.gradle.api.plugins.quality.Checkstyle;
+import org.gradle.api.Task;
+import org.gradle.api.reporting.ReportContainer;
+import org.gradle.api.reporting.Reporting;
+import org.gradle.api.reporting.SingleFileReport;
 import org.gradle.api.tasks.TaskAction;
 import org.w3c.dom.Document;
 
-class CircleCheckstyleFinalizer extends DefaultTask {
+class CircleStyleFinalizer extends DefaultTask {
 
-    private Checkstyle checkstyleTask;
+    private ReportParser reportParser;
+    private Task styleTask;
+    private Reporting<? extends ReportContainer<SingleFileReport>> reporting;
     private StyleTaskTimer styleTaskTimer;
     private File targetFile;
 
     @Inject
-    public CircleCheckstyleFinalizer() { }
+    public CircleStyleFinalizer() { }
 
-    public Checkstyle getCheckstyleTask() {
-        return checkstyleTask;
+    public ReportParser getReportParser() {
+        return reportParser;
     }
 
-    public void setCheckstyleTask(Checkstyle checkstyleTask) {
-        this.checkstyleTask = checkstyleTask;
+    public void setReportParser(ReportParser reportParser) {
+        this.reportParser = reportParser;
+    }
+
+    public Task getStyleTask() {
+        return styleTask;
+    }
+
+    public void setStyleTask(Task styleTask) {
+        this.styleTask = styleTask;
+    }
+
+    public Reporting<? extends ReportContainer<SingleFileReport>> getReporting() {
+        return reporting;
+    }
+
+    public void setReporting(Reporting<? extends ReportContainer<SingleFileReport>> reporting) {
+        this.reporting = reporting;
     }
 
     public StyleTaskTimer getStyleTaskTimer() {
@@ -67,18 +87,18 @@ class CircleCheckstyleFinalizer extends DefaultTask {
 
     @TaskAction
     public void createCircleReport() throws IOException, TransformerException {
-        if (!checkstyleTask.getDidWork()) {
+        if (!styleTask.getDidWork()) {
             setDidWork(false);
             return;
         }
 
         File rootDir = getProject().getRootProject().getProjectDir();
         String projectName = getProject().getName();
-        File sourceReport = checkstyleTask.getReports().findByName("xml").getDestination();
+        File sourceReport = reporting.getReports().findByName("xml").getDestination();
 
-        List<Failure> failures = loadCheckstyleFailures(new FileInputStream(sourceReport));
-        long taskTimeNanos = styleTaskTimer.getTaskTimeNanos(checkstyleTask);
-        Document report = createReport(rootDir, projectName, checkstyleTask.getName(), taskTimeNanos, failures);
+        List<Failure> failures = reportParser.loadFailures(new FileInputStream(sourceReport));
+        long taskTimeNanos = styleTaskTimer.getTaskTimeNanos(styleTask);
+        Document report = createReport(rootDir, projectName, styleTask.getName(), taskTimeNanos, failures);
         targetFile.getParentFile().mkdirs();
         try (FileWriter writer = new FileWriter(targetFile)) {
             XmlUtils.write(writer, report);
