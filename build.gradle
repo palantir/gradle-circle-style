@@ -27,6 +27,9 @@ dependencies {
   testCompile 'me.nallar.whocalled:WhoCalled:1.1'
 }
 
+// Extra validation steps
+tasks.check.dependsOn tasks.javadoc
+
 group = 'com.palantir'
 if (System.env.CIRCLE_TAG) {
   version = System.env.CIRCLE_TAG.replaceAll('^v', '')
