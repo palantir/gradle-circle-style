@@ -15,7 +15,7 @@ Add the following to your project's top-level build.gradle file:
 ```gradle
 
 plugins {
-  id 'com.palantir.circle.style' version '0.2'
+  id 'com.palantir.circle.style' version '1.0.0'
 }
 ```
 
