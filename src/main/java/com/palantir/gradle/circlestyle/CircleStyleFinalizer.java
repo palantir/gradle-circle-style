@@ -15,7 +15,8 @@
  */
 package com.palantir.gradle.circlestyle;
 
-import static com.palantir.gradle.circlestyle.JUnitReportCreator.createReport;
+import static com.palantir.gradle.circlestyle.FailuresReportGenerator.failuresReport;
+import static com.palantir.gradle.circlestyle.JUnitReportCreator.reportToXml;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -98,7 +99,8 @@ class CircleStyleFinalizer extends DefaultTask {
 
         List<Failure> failures = reportParser.loadFailures(new FileInputStream(sourceReport));
         long taskTimeNanos = styleTaskTimer.getTaskTimeNanos(styleTask);
-        Document report = createReport(rootDir, projectName, styleTask.getName(), taskTimeNanos, failures);
+        Document report = reportToXml(failuresReport(
+                rootDir, projectName, styleTask.getName(), taskTimeNanos, failures));
         targetFile.getParentFile().mkdirs();
         try (FileWriter writer = new FileWriter(targetFile)) {
             XmlUtils.write(writer, report);

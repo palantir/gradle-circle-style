@@ -37,6 +37,8 @@ public class CircleStylePlugin implements Plugin<Project> {
             return;
         }
 
+        configureBuildFailureFinalizer(rootProject, circleReportsDir);
+
         final StyleTaskTimer timer = new StyleTaskTimer();
         rootProject.getGradle().addListener(timer);
 
@@ -57,6 +59,24 @@ public class CircleStylePlugin implements Plugin<Project> {
                 });
             }
         });
+    }
+
+    private void configureBuildFailureFinalizer(Project rootProject, String circleReportsDir) {
+        int attemptNumber = 1;
+        File targetFile = new File(new File(circleReportsDir, "gradle"), "build.xml");
+        while (targetFile.exists()) {
+            targetFile = new File(new File(circleReportsDir, "gradle"), "build" + attemptNumber + ".xml");
+        }
+        Integer container;
+        try {
+            container = Integer.parseInt(System.getenv("CIRCLE_NODE_INDEX"));
+        } catch (NumberFormatException e) {
+            container = null;
+        }
+        CircleBuildFailureListener listener = new CircleBuildFailureListener();
+        CircleBuildFinishedAction action = new CircleBuildFinishedAction(container, targetFile, listener);
+        rootProject.getGradle().addListener(listener);
+        rootProject.getGradle().buildFinished(action);
     }
 
     private void configureCheckstyleTask(

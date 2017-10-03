@@ -15,37 +15,37 @@
  */
 package com.palantir.gradle.circlestyle;
 
-import static com.palantir.gradle.circlestyle.JUnitReportCreator.reportToXml;
+import static com.palantir.gradle.circlestyle.FailuresReportGenerator.failuresReport;
+import static com.palantir.gradle.circlestyle.TestCommon.CHECKSTYLE_FAILURES;
+import static com.palantir.gradle.circlestyle.TestCommon.FAILED_CHECKSTYLE_TIME_NANOS;
 import static com.palantir.gradle.circlestyle.TestCommon.REPORT;
-import static com.palantir.gradle.circlestyle.TestCommon.readTestFile;
+import static com.palantir.gradle.circlestyle.TestCommon.ROOT;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.StringWriter;
 
 import javax.xml.transform.TransformerException;
 
 import org.junit.Test;
-import org.w3c.dom.Document;
 
-public class JUnitReportCreatorTests {
+import com.google.common.collect.ImmutableList;
+
+public class FailuresReportGeneratorTests {
 
     @Test
     public void testNoErrors() throws TransformerException {
-        Document junitReport = reportToXml(new Report.Builder()
-                .name("myproject")
-                .subname("checkstyleMain")
-                .elapsedTimeNanos(123_000_000_000L)
+        Report report = failuresReport(
+                ROOT, "fooproject", "checkstyleTest", FAILED_CHECKSTYLE_TIME_NANOS, ImmutableList.<Failure>of());
+        assertThat(report).isEqualTo(new Report.Builder()
+                .name("fooproject")
+                .subname("checkstyleTest")
+                .elapsedTimeNanos(FAILED_CHECKSTYLE_TIME_NANOS)
                 .build());
-        String xml = XmlUtils.write(new StringWriter(), junitReport).toString();
-
-        assertThat(xml).isEqualTo(readTestFile("empty-checkstyle-report.xml"));
     }
 
     @Test
     public void testTwoErrors() throws TransformerException {
-        Document junitReport = reportToXml(REPORT);
-        String xml = XmlUtils.write(new StringWriter(), junitReport).toString();
+        Report report = failuresReport(
+                ROOT, "fooproject", "checkstyleTest", FAILED_CHECKSTYLE_TIME_NANOS, CHECKSTYLE_FAILURES);
+        assertThat(report).isEqualTo(REPORT);
 
-        assertThat(xml).isEqualTo(readTestFile("two-namecheck-failures-checkstyle-report.xml"));
     }
 }
