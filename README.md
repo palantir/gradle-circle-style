@@ -7,6 +7,10 @@ A plugin for Gradle that integrates [Checkstyle] and [FindBugs] output into [Cir
 [CircleCI]: https://circleci.com/
 [FindBugs]: https://docs.gradle.org/current/userguide/findbugs_plugin.html
 
+[![Gradle plugins page](https://img.shields.io/github/release/palantir/gradle-circle-style.svg?maxAge=60)](https://plugins.gradle.org/plugin/com.palantir.circle.style)
+[![CircleCI](https://img.shields.io/circleci/project/github/palantir/gradle-circle-style/master.svg?maxAge=60)](https://circleci.com/gh/palantir/gradle-circle-style/tree/master)
+[![Apache 2.0 License](https://img.shields.io/github/license/palantir/gradle-circle-style.svg?maxAge=2592000)](http://www.apache.org/licenses/LICENSE-2.0)
+
 Quickstart
 ----------
 
