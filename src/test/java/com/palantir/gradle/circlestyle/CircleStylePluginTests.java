@@ -88,6 +88,20 @@ public class CircleStylePluginTests {
         assertThat(reportXml).contains("methodA() invokes System.exit");
     }
 
+    @Test
+    public void buildStepFailureIntegrationTest() throws IOException {
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.getRoot())
+                .withArguments("--stacktrace", "failingTask")
+                .buildAndFail();
+        assertThat(result.getOutput()).contains("This task will always fail");
+
+        File report = new File(reportsDir, "gradle/build.xml");
+        assertThat(report).exists();
+        String reportXml = Files.asCharSource(report, UTF_8).read();
+        assertThat(reportXml).contains("message=\"RuntimeException: This task will always fail\"");
+    }
+
     private static String pluginClasspath() {
         URLClassLoader classloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
         List<String> classpath = new ArrayList<>();

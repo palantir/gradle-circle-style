@@ -32,25 +32,54 @@ import me.nallar.whocalled.WhoCalled;
 
 public class TestCommon {
 
+    private static final String SOURCE = "com.puppycrawl.tools.checkstyle.checks.naming.ParameterNameCheck";
     public static final File ROOT = new File("/home/ubuntu/fooproject");
-    public static final File CLASSFILE = new File(
-            ROOT, "fooproject/src/main/java/org/example/server/FooApplication.java");
+    private static final String CLASSFILE = "fooproject/src/main/java/org/example/server/FooApplication.java";
+    private static final String MESSAGE_2 = "Parameter name 'c' must match pattern '^[a-z][a-zA-Z0-9][a-zA-Z0-9]*$'.";
+    private static final String MESSAGE_1 = "Parameter name 'b' must match pattern '^[a-z][a-zA-Z0-9][a-zA-Z0-9]*$'.";
     public static final List<Failure> CHECKSTYLE_FAILURES = ImmutableList.of(
             new Failure.Builder()
-                    .source("com.puppycrawl.tools.checkstyle.checks.naming.ParameterNameCheck")
+                    .source(SOURCE)
                     .severity("ERROR")
-                    .file(CLASSFILE)
+                    .file(new File(
+                            ROOT, CLASSFILE))
                     .line(135)
-                    .message("Parameter name 'b' must match pattern '^[a-z][a-zA-Z0-9][a-zA-Z0-9]*$'.")
+                    .message(MESSAGE_1)
                     .build(),
             new Failure.Builder()
-                    .source("com.puppycrawl.tools.checkstyle.checks.naming.ParameterNameCheck")
+                    .source(SOURCE)
                     .severity("ERROR")
-                    .file(CLASSFILE)
+                    .file(new File(
+                            ROOT, CLASSFILE))
                     .line(181)
-                    .message("Parameter name 'c' must match pattern '^[a-z][a-zA-Z0-9][a-zA-Z0-9]*$'.")
+                    .message(MESSAGE_2)
                     .build());
     public static final long FAILED_CHECKSTYLE_TIME_NANOS = 321_000_000_000L;
+    public static final Report REPORT = new Report.Builder()
+            .name("fooproject")
+            .subname("checkstyleTest")
+            .elapsedTimeNanos(FAILED_CHECKSTYLE_TIME_NANOS)
+            .addTestCases(new Report.TestCase.Builder()
+                    .name("ParameterNameCheck - org.example.server.FooApplication")
+                    .failure(new Report.Failure.Builder()
+                            .message("FooApplication.java:135: " + MESSAGE_1)
+                            .details("ERROR: " + MESSAGE_1 + "\n"
+                                    + "Category: " + SOURCE + "\n"
+                                    + "File: " + CLASSFILE + "\n"
+                                    + "Line: 135\n")
+                            .build())
+                    .build())
+            .addTestCases(new Report.TestCase.Builder()
+                    .name("ParameterNameCheck - org.example.server.FooApplication")
+                    .failure(new Report.Failure.Builder()
+                            .message("FooApplication.java:181: " + MESSAGE_2)
+                            .details("ERROR: " + MESSAGE_2 + "\n"
+                                    + "Category: " + SOURCE + "\n"
+                                    + "File: " + CLASSFILE + "\n"
+                                    + "Line: 181\n")
+                            .build())
+                    .build())
+            .build();
 
     public static URL testFile(String filename) {
         return WhoCalled.$.getCallingClass().getResource(filename);

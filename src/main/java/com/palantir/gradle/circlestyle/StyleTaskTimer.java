@@ -54,7 +54,7 @@ class StyleTaskTimer implements TaskExecutionListener {
         }
     }
 
-    private static boolean isStyleTask(Task task) {
+    public static boolean isStyleTask(Task task) {
         return task instanceof Checkstyle || task instanceof FindBugs;
     }
 }

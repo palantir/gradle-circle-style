@@ -39,3 +39,9 @@ tasks.withType(FindBugs) {
     html.enabled = true
   }
 }
+
+task failingTask {
+  doLast {
+    throw new RuntimeException("This task will always fail")
+  }
+}
