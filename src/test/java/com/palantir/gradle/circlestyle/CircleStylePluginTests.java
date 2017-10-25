@@ -18,6 +18,7 @@ package com.palantir.gradle.circlestyle;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.palantir.gradle.circlestyle.TestCommon.copyTestFile;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -97,6 +98,24 @@ public class CircleStylePluginTests {
         assertThat(result.getOutput()).contains("This task will always fail");
 
         File report = new File(reportsDir, "gradle/build.xml");
+        assertThat(report).exists();
+        String reportXml = Files.asCharSource(report, UTF_8).read();
+        assertThat(reportXml).contains("message=\"RuntimeException: This task will always fail\"");
+    }
+
+    @Test
+    public void findsUniqueBuildStepsReportFileName() throws IOException {
+        assertTrue(new File(reportsDir, "gradle").mkdirs());
+        assertTrue(new File(reportsDir, "gradle/build.xml").createNewFile());
+        assertTrue(new File(reportsDir, "gradle/build2.xml").createNewFile());
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.getRoot())
+                .withArguments("--stacktrace", "failingTask")
+                .buildAndFail();
+        assertThat(result.getOutput()).contains("This task will always fail");
+
+        File report = new File(reportsDir, "gradle/build3.xml");
         assertThat(report).exists();
         String reportXml = Files.asCharSource(report, UTF_8).read();
         assertThat(reportXml).contains("message=\"RuntimeException: This task will always fail\"");

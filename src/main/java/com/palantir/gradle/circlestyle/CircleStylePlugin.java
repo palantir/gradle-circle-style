@@ -65,7 +65,7 @@ public class CircleStylePlugin implements Plugin<Project> {
         int attemptNumber = 1;
         File targetFile = new File(new File(circleReportsDir, "gradle"), "build.xml");
         while (targetFile.exists()) {
-            targetFile = new File(new File(circleReportsDir, "gradle"), "build" + attemptNumber + ".xml");
+            targetFile = new File(new File(circleReportsDir, "gradle"), "build" + (++attemptNumber) + ".xml");
         }
         Integer container;
         try {
