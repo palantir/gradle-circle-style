@@ -121,6 +121,22 @@ public class CircleStylePluginTests {
         assertThat(reportXml).contains("message=\"RuntimeException: This task will always fail\"");
     }
 
+    @Test
+    public void canCallGradleThreeTimesInARow() {
+        GradleRunner.create()
+                .withProjectDir(projectDir.getRoot())
+                .withArguments("--stacktrace", "dependencies")
+                .build();
+        GradleRunner.create()
+                .withProjectDir(projectDir.getRoot())
+                .withArguments("--stacktrace", "compileJava")
+                .build();
+        GradleRunner.create()
+                .withProjectDir(projectDir.getRoot())
+                .withArguments("--stacktrace", "compileTestJava")
+                .build();
+    }
+
     private static String pluginClasspath() {
         URLClassLoader classloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
         List<String> classpath = new ArrayList<>();
