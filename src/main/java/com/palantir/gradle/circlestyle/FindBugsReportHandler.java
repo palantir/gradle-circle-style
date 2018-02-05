@@ -51,15 +51,18 @@ class FindBugsReportHandler extends DefaultHandler {
     private final List<Failure> failures = new ArrayList<>();
     private Failure.Builder failure = null;
     private StringBuilder content = null;
+    private int depth = 0;
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        depth++;
         switch (qName) {
             case "SrcDir":
                 content = new StringBuilder();
                 break;
 
             case "BugInstance":
+                depth = 0;
                 failure = new Failure.Builder()
                         .source(attributes.getValue("type"))
                         .severity("ERROR");
@@ -67,9 +70,10 @@ class FindBugsReportHandler extends DefaultHandler {
 
             case "LongMessage":
                 content = new StringBuilder();
+                break;
 
             case "SourceLine":
-                if ("true".equals(attributes.getValue("primary"))) {
+                if (depth == 1) {
                     String sourcepath = attributes.getValue("sourcepath");
                     File sourceFile = new File(sourcepath);
                     for (String source : sources) {
@@ -115,6 +119,7 @@ class FindBugsReportHandler extends DefaultHandler {
             default:
                 break;
         }
+        depth--;
     }
 
     List<Failure> failures() {
