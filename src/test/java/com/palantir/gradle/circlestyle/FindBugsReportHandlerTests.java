@@ -59,4 +59,10 @@ public class FindBugsReportHandlerTests {
         List<Failure> failures = PARSER.loadFailures(testFile("two-exit-errors-findbugs.xml").openStream());
         assertThat(failures).containsExactlyElementsOf(FINDBUGS_FAILURES);
     }
+
+    /** @see <a href="https://github.com/palantir/gradle-circle-style/issues/7">Issue 7</a> */
+    @Test
+    public void testSyntheticSourceLine() throws IOException {
+        PARSER.loadFailures(testFile("synthetic-sourceline-findbugs.xml").openStream());
+    }
 }
