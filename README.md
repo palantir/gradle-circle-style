@@ -1,7 +1,7 @@
 Gradle Circle Style
 ===================
 
-A plugin for Gradle that integrates [Checkstyle] and [FindBugs] output into [CircleCI].
+A plugin for Gradle that summarizes failed Gradle builds in [CircleCI], with special handling for [Checkstyle] and [FindBugs] failures.
 
 [Checkstyle]: https://docs.gradle.org/current/userguide/checkstyle_plugin.html
 [CircleCI]: https://circleci.com/
@@ -19,7 +19,7 @@ Add the following to your project's top-level build.gradle file:
 ```gradle
 
 plugins {
-  id 'com.palantir.circle.style' version '1.0.0'
+  id 'com.palantir.circle.style' version '1.1.2'
 }
 ```
 
@@ -30,6 +30,6 @@ And now your CircleCI builds will fail with nice summaries:
 Details
 -------
 
-This plugin is enabled by the `CIRCLE_TEST_REPORTS` environment variable, set automatically on CircleCI builds. It then automatically enables XML output for the plugins, and adds a finalizer task that converts these to the JUnit XML output that CircleCI expects.
+This plugin is enabled by the `CIRCLE_TEST_REPORTS` environment variable, set automatically on CircleCI builds. It then automatically enables XML output for Checkstyle and FindBugs plugins, and adds a finalizer task that collates their results (and any other Gradle build step failures) using the JUnit XML output that CircleCI expects.
 
 Note that FindBugs does not support generating both HTML and XML output, so HTML output will be disabled on CircleCI builds. (Checkstyle does not have this limitation.)
