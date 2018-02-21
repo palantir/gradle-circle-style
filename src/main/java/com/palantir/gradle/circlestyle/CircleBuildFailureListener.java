@@ -70,7 +70,7 @@ class CircleBuildFailureListener implements TaskExecutionListener {
         }
     }
 
-    private boolean isUntracked(Task task) {
+    private static boolean isUntracked(Task task) {
         return !(task instanceof Test) && !isStyleTask(task);
     }
 }
