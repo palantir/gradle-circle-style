@@ -16,42 +16,31 @@
 package com.palantir.gradle.circlestyle;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-
+import org.gradle.api.plugins.quality.FindBugs;
+import org.gradle.api.plugins.quality.FindBugsXmlReport;
+import org.gradle.api.reporting.SingleFileReport;
 import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
 
-class FindBugsReportHandler extends DefaultHandler {
-
-    public static final ReportParser PARSER = new ReportParser() {
-        @Override
-        public List<Failure> loadFailures(InputStream report) {
-            try {
-                FindBugsReportHandler handler = new FindBugsReportHandler();
-                XMLReader xmlReader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
-                xmlReader.setContentHandler(handler);
-                xmlReader.parse(new InputSource(report));
-                return handler.failures();
-            } catch (SAXException | ParserConfigurationException | IOException e) {
-                throw new AssertionError(e);
-            }
-        }
-    };
+class FindBugsReportHandler extends ReportHandler<FindBugs> {
 
     private final List<String> sources = new ArrayList<>();
     private final List<Failure> failures = new ArrayList<>();
     private Failure.Builder failure = null;
     private StringBuilder content = null;
     private int depth = 0;
+
+    @Override
+    public void configureTask(FindBugs task) {
+        for (SingleFileReport report : task.getReports()) {
+            report.setEnabled(false);
+        }
+        FindBugsXmlReport xmlReport = (FindBugsXmlReport) task.getReports().findByName("xml");
+        xmlReport.setEnabled(true);
+        xmlReport.setWithMessages(true);
+    }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) {
@@ -122,7 +111,8 @@ class FindBugsReportHandler extends DefaultHandler {
         depth--;
     }
 
-    List<Failure> failures() {
+    @Override
+    public List<Failure> failures() {
         return failures;
     }
 }

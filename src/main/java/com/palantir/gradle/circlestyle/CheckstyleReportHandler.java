@@ -16,39 +16,22 @@
 package com.palantir.gradle.circlestyle;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-
+import org.gradle.api.plugins.quality.Checkstyle;
 import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
 
-class CheckstyleReportHandler extends DefaultHandler {
-
-    public static ReportParser PARSER = new ReportParser() {
-        @Override
-        public List<Failure> loadFailures(InputStream report) {
-            try {
-                CheckstyleReportHandler handler = new CheckstyleReportHandler();
-                XMLReader xmlReader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
-                xmlReader.setContentHandler(handler);
-                xmlReader.parse(new InputSource(report));
-                return handler.failures();
-            } catch (SAXException | ParserConfigurationException | IOException e) {
-                throw new AssertionError(e);
-            }
-        }
-    };
+class CheckstyleReportHandler extends ReportHandler<Checkstyle> {
 
     private final List<Failure> failures = new ArrayList<>();
     private File file;
+
+    @Override
+    public void configureTask(Checkstyle task) {
+        // Ensure XML output is enabled
+        task.getReports().findByName("xml").setEnabled(true);
+    }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) {
@@ -71,7 +54,8 @@ class CheckstyleReportHandler extends DefaultHandler {
         }
     }
 
-    List<Failure> failures() {
+    @Override
+    public List<Failure> failures() {
         return failures;
     }
 }

@@ -15,9 +15,9 @@
  */
 package com.palantir.gradle.circlestyle;
 
-import static com.palantir.gradle.circlestyle.FindBugsReportHandler.PARSER;
 import static com.palantir.gradle.circlestyle.TestCommon.ROOT;
 import static com.palantir.gradle.circlestyle.TestCommon.testFile;
+import static com.palantir.gradle.circlestyle.XmlUtils.parseXml;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -50,19 +50,21 @@ public class FindBugsReportHandlerTests {
 
     @Test
     public void testNoErrors() throws IOException {
-        List<Failure> failures = PARSER.loadFailures(testFile("no-errors-findbugs.xml").openStream());
+        List<Failure> failures =
+                parseXml(new FindBugsReportHandler(), testFile("no-errors-findbugs.xml").openStream()).failures();
         assertThat(failures).isEmpty();
     }
 
     @Test
     public void testTwoErrors() throws IOException {
-        List<Failure> failures = PARSER.loadFailures(testFile("two-exit-errors-findbugs.xml").openStream());
+        List<Failure> failures =
+                parseXml(new FindBugsReportHandler(), testFile("two-exit-errors-findbugs.xml").openStream()).failures();
         assertThat(failures).containsExactlyElementsOf(FINDBUGS_FAILURES);
     }
 
     /** @see <a href="https://github.com/palantir/gradle-circle-style/issues/7">Issue 7</a> */
     @Test
     public void testSyntheticSourceLine() throws IOException {
-        PARSER.loadFailures(testFile("synthetic-sourceline-findbugs.xml").openStream());
+        parseXml(new FindBugsReportHandler(), testFile("synthetic-sourceline-findbugs.xml").openStream());
     }
 }
