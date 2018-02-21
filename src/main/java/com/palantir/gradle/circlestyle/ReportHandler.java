@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Palantir Technologies, Inc.
+ * Copyright 2018 Palantir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,16 @@
  */
 package com.palantir.gradle.circlestyle;
 
-import java.io.InputStream;
 import java.util.List;
 
-interface ReportParser {
-    List<Failure> loadFailures(InputStream report);
+import org.gradle.api.Task;
+import org.gradle.api.reporting.ReportContainer;
+import org.gradle.api.reporting.Reporting;
+import org.gradle.api.reporting.SingleFileReport;
+import org.xml.sax.helpers.DefaultHandler;
+
+abstract class ReportHandler<T extends Task & Reporting<? extends ReportContainer<SingleFileReport>>>
+        extends DefaultHandler {
+    public abstract void configureTask(T task);
+    public abstract List<Failure> failures();
 }

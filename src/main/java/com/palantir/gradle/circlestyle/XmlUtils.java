@@ -15,8 +15,12 @@
  */
 package com.palantir.gradle.circlestyle;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -25,8 +29,22 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 class XmlUtils {
+
+    public static <T extends ReportHandler> T parseXml(T handler, InputStream report) {
+        try {
+            XMLReader xmlReader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
+            xmlReader.setContentHandler(handler);
+            xmlReader.parse(new InputSource(report));
+            return handler;
+        } catch (SAXException | ParserConfigurationException | IOException e) {
+            throw new AssertionError(e);
+        }
+    }
 
     public static Writer write(Writer writer, Document document) throws TransformerException {
         Transformer t = TransformerFactory.newInstance().newTransformer();

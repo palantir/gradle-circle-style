@@ -17,6 +17,7 @@ package com.palantir.gradle.circlestyle;
 
 import static com.palantir.gradle.circlestyle.FailuresReportGenerator.failuresReport;
 import static com.palantir.gradle.circlestyle.JUnitReportCreator.reportToXml;
+import static com.palantir.gradle.circlestyle.XmlUtils.parseXml;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,7 +28,9 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.xml.transform.TransformerException;
 
+import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.reporting.ReportContainer;
 import org.gradle.api.reporting.Reporting;
@@ -37,7 +40,39 @@ import org.w3c.dom.Document;
 
 class CircleStyleFinalizer extends DefaultTask {
 
-    private ReportParser reportParser;
+    public static <T extends Task & Reporting<? extends ReportContainer<SingleFileReport>>> void registerFinalizer(
+            Project project,
+            final T task,
+            File reportDir,
+            StyleTaskTimer timer,
+            final ReportHandler<T> reportHandler) {
+        // Ensure any necessary output is enabled
+        task.doFirst(new Action<Task>() {
+            @Override
+            public void execute(Task ignored) {
+                reportHandler.configureTask(task);
+            }
+        });
+
+        // Configure the finalizer task
+        CircleStyleFinalizer finalizer = Tasks.createTask(
+                project.getTasks(),
+                task.getName() + "CircleFinalizer",
+                CircleStyleFinalizer.class);
+        if (finalizer == null) {
+            // Already registered (happens if the user applies us to the root project and subprojects)
+            return;
+        }
+        finalizer.setReportHandler(reportHandler);
+        finalizer.setStyleTask(task);
+        finalizer.setReporting(task);
+        finalizer.setStyleTaskTimer(timer);
+        finalizer.setTargetFile(new File(reportDir, project.getName() + "-" + task.getName() + ".xml"));
+
+        task.finalizedBy(finalizer);
+    }
+
+    private ReportHandler<?> reportHandler;
     private Task styleTask;
     private Reporting<? extends ReportContainer<SingleFileReport>> reporting;
     private StyleTaskTimer styleTaskTimer;
@@ -46,12 +81,12 @@ class CircleStyleFinalizer extends DefaultTask {
     @Inject
     public CircleStyleFinalizer() { }
 
-    public ReportParser getReportParser() {
-        return reportParser;
+    public ReportHandler<?> getReportHandler() {
+        return reportHandler;
     }
 
-    public void setReportParser(ReportParser reportParser) {
-        this.reportParser = reportParser;
+    public void setReportHandler(ReportHandler<?> reportHandler) {
+        this.reportHandler = reportHandler;
     }
 
     public Task getStyleTask() {
@@ -97,7 +132,7 @@ class CircleStyleFinalizer extends DefaultTask {
         String projectName = getProject().getName();
         File sourceReport = reporting.getReports().findByName("xml").getDestination();
 
-        List<Failure> failures = reportParser.loadFailures(new FileInputStream(sourceReport));
+        List<Failure> failures = parseXml(reportHandler, new FileInputStream(sourceReport)).failures();
         long taskTimeNanos = styleTaskTimer.getTaskTimeNanos(styleTask);
         Document report = reportToXml(failuresReport(
                 rootDir, projectName, styleTask.getName(), taskTimeNanos, failures));

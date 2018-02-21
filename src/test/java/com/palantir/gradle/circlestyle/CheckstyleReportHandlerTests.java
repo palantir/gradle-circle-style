@@ -15,9 +15,9 @@
  */
 package com.palantir.gradle.circlestyle;
 
-import static com.palantir.gradle.circlestyle.CheckstyleReportHandler.PARSER;
 import static com.palantir.gradle.circlestyle.TestCommon.CHECKSTYLE_FAILURES;
 import static com.palantir.gradle.circlestyle.TestCommon.testFile;
+import static com.palantir.gradle.circlestyle.XmlUtils.parseXml;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -29,13 +29,17 @@ public class CheckstyleReportHandlerTests {
 
     @Test
     public void testNoErrors() throws IOException {
-        List<Failure> failures = PARSER.loadFailures(testFile("no-failures-checkstyle.xml").openStream());
+        List<Failure> failures =
+                parseXml(new CheckstyleReportHandler(), testFile("no-failures-checkstyle.xml").openStream())
+                        .failures();
         assertThat(failures).isEmpty();
     }
 
     @Test
     public void testTwoErrors() throws IOException {
-        List<Failure> failures = PARSER.loadFailures(testFile("two-namecheck-failures-checkstyle.xml").openStream());
+        List<Failure> failures =
+                parseXml(new CheckstyleReportHandler(), testFile("two-namecheck-failures-checkstyle.xml").openStream())
+                        .failures();
         assertThat(failures).containsExactlyElementsOf(CHECKSTYLE_FAILURES);
     }
 }
