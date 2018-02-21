@@ -22,8 +22,6 @@ import static com.palantir.gradle.circlestyle.TestCommon.REPORT;
 import static com.palantir.gradle.circlestyle.TestCommon.ROOT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.xml.transform.TransformerException;
-
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -31,7 +29,7 @@ import com.google.common.collect.ImmutableList;
 public class FailuresReportGeneratorTests {
 
     @Test
-    public void testNoErrors() throws TransformerException {
+    public void testNoErrors() {
         Report report = failuresReport(
                 ROOT, "fooproject", "checkstyleTest", FAILED_CHECKSTYLE_TIME_NANOS, ImmutableList.<Failure>of());
         assertThat(report).isEqualTo(new Report.Builder()
@@ -42,7 +40,7 @@ public class FailuresReportGeneratorTests {
     }
 
     @Test
-    public void testTwoErrors() throws TransformerException {
+    public void testTwoErrors() {
         Report report = failuresReport(
                 ROOT, "fooproject", "checkstyleTest", FAILED_CHECKSTYLE_TIME_NANOS, CHECKSTYLE_FAILURES);
         assertThat(report).isEqualTo(REPORT);

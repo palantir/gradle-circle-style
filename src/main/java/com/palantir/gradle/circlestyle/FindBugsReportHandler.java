@@ -54,7 +54,7 @@ class FindBugsReportHandler extends DefaultHandler {
     private int depth = 0;
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+    public void startElement(String uri, String localName, String qName, Attributes attributes) {
         depth++;
         switch (qName) {
             case "SrcDir":
@@ -92,14 +92,14 @@ class FindBugsReportHandler extends DefaultHandler {
     }
 
     @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
+    public void characters(char[] ch, int start, int length) {
         if (content != null) {
             content.append(ch, start, length);
         }
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
+    public void endElement(String uri, String localName, String qName) {
         switch (qName) {
             case "SrcDir":
                 sources.add(content.toString());
