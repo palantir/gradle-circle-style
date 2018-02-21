@@ -80,7 +80,7 @@ public class CircleBuildFailureListenerTests {
                 + "\tat " + CircleBuildFailureListenerTests.class.getName() + ".failed");
     }
 
-    private Task task(String projectName, String taskName) {
+    private static Task task(String projectName, String taskName) {
         Task task = Mockito.mock(Task.class, Mockito.RETURNS_DEEP_STUBS);
         when(task.getProject().getName()).thenReturn(projectName);
         when(task.getName()).thenReturn(taskName);

@@ -61,7 +61,7 @@ public class CircleStylePlugin implements Plugin<Project> {
         });
     }
 
-    private void configureBuildFailureFinalizer(Project rootProject, String circleReportsDir) {
+    private static void configureBuildFailureFinalizer(Project rootProject, String circleReportsDir) {
         int attemptNumber = 1;
         File targetFile = new File(new File(circleReportsDir, "gradle"), "build.xml");
         while (targetFile.exists()) {
@@ -79,7 +79,7 @@ public class CircleStylePlugin implements Plugin<Project> {
         rootProject.getGradle().buildFinished(action);
     }
 
-    private void configureCheckstyleTask(
+    private static void configureCheckstyleTask(
             final Project project,
             final Checkstyle checkstyleTask,
             final String circleReportsDir,
@@ -112,7 +112,7 @@ public class CircleStylePlugin implements Plugin<Project> {
         checkstyleTask.finalizedBy(finalizer);
     }
 
-    private void configureFindbugsTask(
+    private static void configureFindbugsTask(
             final Project project,
             final FindBugs findbugsTask,
             final String circleReportsDir,

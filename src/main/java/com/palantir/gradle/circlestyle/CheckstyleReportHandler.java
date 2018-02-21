@@ -51,7 +51,7 @@ class CheckstyleReportHandler extends DefaultHandler {
     private File file;
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+    public void startElement(String uri, String localName, String qName, Attributes attributes) {
         switch (qName) {
             case "file":
                 file = new File(attributes.getValue("name"));
