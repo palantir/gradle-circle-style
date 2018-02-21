@@ -26,7 +26,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 
-public class XmlUtils {
+class XmlUtils {
 
     public static Writer write(Writer writer, Document document) throws TransformerException {
         Transformer t = TransformerFactory.newInstance().newTransformer();

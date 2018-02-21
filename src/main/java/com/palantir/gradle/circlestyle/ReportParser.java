@@ -18,6 +18,6 @@ package com.palantir.gradle.circlestyle;
 import java.io.InputStream;
 import java.util.List;
 
-public interface ReportParser {
+interface ReportParser {
     List<Failure> loadFailures(InputStream report);
 }
