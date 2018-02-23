@@ -63,7 +63,7 @@ class CircleBuildFailureListener implements TaskExecutionListener {
     }
 
     private static String getMessage(Throwable t) {
-        if (t.getMessage().isEmpty()) {
+        if (t.getMessage() == null) {
             return t.getClass().getSimpleName();
         } else {
             return t.getClass().getSimpleName() + ": " + t.getMessage();
