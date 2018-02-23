@@ -59,10 +59,9 @@ public class CircleStyleFinalizerTests {
 
         CircleStyleFinalizer finalizer = (CircleStyleFinalizer) project
                 .task(ImmutableMap.of("type", CircleStyleFinalizer.class), "checkstyleTestCircleFinalizer");
-        finalizer.setReportHandler(new CheckstyleReportHandler());
         finalizer.setStyleTask(checkstyle);
-        finalizer.setReporting(checkstyle);
         finalizer.setStyleTaskTimer(timer);
+        finalizer.setFailuresSupplier(XmlReportFailuresSupplier.create(checkstyle, new CheckstyleReportHandler()));
         finalizer.setTargetFile(targetFile);
 
         finalizer.createCircleReport();
@@ -87,10 +86,9 @@ public class CircleStyleFinalizerTests {
 
         CircleStyleFinalizer finalizer = (CircleStyleFinalizer) project
                 .task(ImmutableMap.of("type", CircleStyleFinalizer.class), "checkstyleTestCircleFinalizer");
-        finalizer.setReportHandler(new CheckstyleReportHandler());
         finalizer.setStyleTask(checkstyle);
-        finalizer.setReporting(checkstyle);
         finalizer.setStyleTaskTimer(timer);
+        finalizer.setFailuresSupplier(XmlReportFailuresSupplier.create(checkstyle, new CheckstyleReportHandler()));
         finalizer.setTargetFile(targetFile);
 
         finalizer.createCircleReport();
