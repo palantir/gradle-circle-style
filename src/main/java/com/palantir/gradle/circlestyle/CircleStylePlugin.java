@@ -44,24 +44,22 @@ public class CircleStylePlugin implements Plugin<Project> {
             public void execute(final Project project) {
                 project.getTasks().withType(Checkstyle.class, new Action<Checkstyle>() {
                     @Override
-                    public void execute(Checkstyle checkstyleTask) {
+                    public void execute(Checkstyle checkstyle) {
                         registerFinalizer(
-                                project,
-                                checkstyleTask,
-                                new File(circleReportsDir, "checkstyle"),
+                                checkstyle,
                                 timer,
-                                new CheckstyleReportHandler());
+                                XmlReportFailuresSupplier.create(checkstyle, new CheckstyleReportHandler()),
+                                new File(circleReportsDir, "checkstyle"));
                     }
                 });
                 project.getTasks().withType(FindBugs.class, new Action<FindBugs>() {
                     @Override
-                    public void execute(FindBugs findbugsTask) {
+                    public void execute(FindBugs findbugs) {
                         registerFinalizer(
-                                project,
-                                findbugsTask,
-                                new File(circleReportsDir, "findbugs"),
+                                findbugs,
                                 timer,
-                                new FindBugsReportHandler());
+                                XmlReportFailuresSupplier.create(findbugs, new FindBugsReportHandler()),
+                                new File(circleReportsDir, "findbugs"));
                     }
                 });
             }

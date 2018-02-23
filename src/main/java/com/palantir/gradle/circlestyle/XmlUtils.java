@@ -35,14 +35,14 @@ import org.xml.sax.XMLReader;
 
 class XmlUtils {
 
-    public static <T extends ReportHandler> T parseXml(T handler, InputStream report) {
+    public static <T extends ReportHandler<?>> T parseXml(T handler, InputStream report) throws IOException {
         try {
             XMLReader xmlReader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
             xmlReader.setContentHandler(handler);
             xmlReader.parse(new InputSource(report));
             return handler;
-        } catch (SAXException | ParserConfigurationException | IOException e) {
-            throw new AssertionError(e);
+        } catch (SAXException | ParserConfigurationException e) {
+            throw new IOException(e);
         }
     }
 
