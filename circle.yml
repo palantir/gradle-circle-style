@@ -4,6 +4,10 @@ machine:
   java:
     version: oraclejdk8
 
+dependencies:
+  override:
+    - ./gradlew resolveDependencies
+
 test:
   override:
     - ./gradlew check

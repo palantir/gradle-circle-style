@@ -65,3 +65,13 @@ task setupPublishProperties {
     System.properties.setProperty('gradle.publish.secret', envOrThrow('gradlePublishSecret'))
   }
 }
+
+// Download dependencies to Gradle's cache
+task resolveDependencies {
+  doLast {
+    project.rootProject.allprojects.each { subProject ->
+      subProject.buildscript.configurations.each { if (it.canBeResolved) it.resolve() }
+      subProject.configurations.each { if (it.canBeResolved) it.resolve() }
+    }
+  }
+}

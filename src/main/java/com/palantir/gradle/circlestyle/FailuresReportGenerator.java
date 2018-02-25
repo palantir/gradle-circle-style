@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class FailuresReportGenerator {
+class FailuresReportGenerator {
 
     private static final Pattern JAVA_FILE_RX = Pattern.compile(".*src/\\w+/java/(.*)\\.java");
 
