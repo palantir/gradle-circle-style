@@ -12,8 +12,6 @@ import org.gradle.api.logging.StandardOutputListener;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.inferred.freebuilder.shaded.com.google.common.collect.ImmutableList;
 
-import com.google.common.annotations.VisibleForTesting;
-
 class JavacFailuresSupplier implements FailuresSupplier {
 
     public static JavacFailuresSupplier create(final JavaCompile javac) {
@@ -35,7 +33,7 @@ class JavacFailuresSupplier implements FailuresSupplier {
 
     private final StringBuilder errorStream;
 
-    @VisibleForTesting JavacFailuresSupplier(StringBuilder errorStream) {
+    JavacFailuresSupplier(StringBuilder errorStream) {
         this.errorStream = errorStream;
     }
 
