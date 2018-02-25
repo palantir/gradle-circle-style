@@ -36,16 +36,16 @@ public class FailuresReportGenerator {
                 .subname(taskName);
 
         for (Failure failure : failures) {
-            String shortSource = failure.source().replaceAll(".*\\.", "");
+            String shortSource = failure.source().isEmpty() ? "" : failure.source().replaceAll(".*\\.", "") + " - ";
             String className = getClassName(failure.file());
 
             Report.TestCase testCase = new Report.TestCase.Builder()
-                    .name(shortSource + " - " + className)
+                    .name(shortSource + className)
                     .failure(new Report.Failure.Builder()
                             .message(failure.file().getName() + ":" + failure.line() + ": " + failure.message())
                             .details(
-                                    failure.severity() + ": " + failure.message() + "\n"
-                                            + "Category: " + failure.source() + "\n"
+                                    failure.severity() + ": " + failure.message() + failure.details() + "\n"
+                                            + (failure.source().isEmpty() ? "" : "Category: " + failure.source() + "\n")
                                             + "File: " + rootDir.toPath().relativize(failure.file().toPath()) + "\n"
                                             + "Line: " + failure.line() + "\n")
                             .build())

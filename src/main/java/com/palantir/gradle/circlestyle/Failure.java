@@ -27,6 +27,12 @@ interface Failure {
     int line();
     String severity();
     String message();
+    String details();
 
-    class Builder extends Failure_Builder { }
+    class Builder extends Failure_Builder {
+        public Builder() {
+            source("");
+            details("");
+        }
+    }
 }
