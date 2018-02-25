@@ -4,13 +4,13 @@ import static java.lang.Integer.parseInt;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.gradle.api.logging.StandardOutputListener;
 import org.gradle.api.tasks.compile.JavaCompile;
-import org.inferred.freebuilder.shaded.com.google.common.collect.ImmutableList;
 
 class JavacFailuresSupplier implements FailuresSupplier {
 
@@ -39,7 +39,7 @@ class JavacFailuresSupplier implements FailuresSupplier {
 
     @Override
     public List<Failure> getFailures() throws IOException {
-        ImmutableList.Builder<Failure> failures = ImmutableList.builder();
+        List<Failure> failures = new ArrayList<>();
         Failure.Builder failureBuilder = null;
         StringBuilder details = null;
         for (String line : errorStream.toString().split("\n")) {
@@ -66,6 +66,6 @@ class JavacFailuresSupplier implements FailuresSupplier {
         if (failureBuilder != null) {
             failures.add(failureBuilder.details(details.toString()).build());
         }
-        return failures.build();
+        return failures;
     }
 }
