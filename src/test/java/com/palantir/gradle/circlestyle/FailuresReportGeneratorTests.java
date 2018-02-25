@@ -22,6 +22,11 @@ import static com.palantir.gradle.circlestyle.TestCommon.REPORT;
 import static com.palantir.gradle.circlestyle.TestCommon.ROOT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.util.List;
+
+import javax.xml.transform.TransformerException;
+
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -44,6 +49,55 @@ public class FailuresReportGeneratorTests {
         Report report = failuresReport(
                 ROOT, "fooproject", "checkstyleTest", FAILED_CHECKSTYLE_TIME_NANOS, CHECKSTYLE_FAILURES);
         assertThat(report).isEqualTo(REPORT);
+    }
+
+    @Test
+    public void testJavacErrors() throws TransformerException {
+        List<Failure> failures = ImmutableList.of(
+                new Failure.Builder()
+                        .file(new File(ROOT, "src/main/java/com/example/MyClass.java"))
+                        .line(8)
+                        .severity("ERROR")
+                        .message("incompatible types: String cannot be converted to int")
+                        .details("\n    private final int a = \"hello\";                               "
+                                + "\n                          ^")
+                        .build(),
+                new Failure.Builder()
+                        .file(new File(ROOT, "src/main/java/com/example/MyClass.java"))
+                        .line(12)
+                        .severity("ERROR")
+                        .message("cannot assign a value to final variable b")
+                        .details("\n        b = 2;                                                   "
+                                        + "\n        ^                                                        ")
+                        .build());
+        Report report = failuresReport(ROOT, "foobar", "compileJava", 293_000, failures);
+        assertThat(report).isEqualTo(new Report.Builder()
+                .name("foobar")
+                .subname("compileJava")
+                .elapsedTimeNanos(293_000)
+                .addTestCases(new Report.TestCase.Builder()
+                        .name("com.example.MyClass")
+                        .failure(new Report.Failure.Builder()
+                                .message("MyClass.java:8: incompatible types: String cannot be converted to int")
+                                .details("ERROR: incompatible types: String cannot be converted to int\n"
+                                        + "    private final int a = \"hello\";                               \n"
+                                        + "                          ^\n"
+                                        + "File: src/main/java/com/example/MyClass.java\n"
+                                        + "Line: 8\n")
+                                .build())
+                        .build())
+                .addTestCases(new Report.TestCase.Builder()
+                        .name("com.example.MyClass")
+                        .failure(new Report.Failure.Builder()
+                                .message("MyClass.java:12: cannot assign a value to final variable b")
+                                .details("ERROR: cannot assign a value to final variable b\n"
+                                        + "        b = 2;                                                   \n"
+                                        + "        ^                                                        \n"
+                                        + "File: src/main/java/com/example/MyClass.java\n"
+                                        + "Line: 12\n")
+                                .build())
+                        .build())
+                .build());
 
     }
 }

@@ -23,6 +23,7 @@ import org.gradle.api.execution.TaskExecutionListener;
 import org.gradle.api.plugins.quality.Checkstyle;
 import org.gradle.api.plugins.quality.FindBugs;
 import org.gradle.api.tasks.TaskState;
+import org.gradle.api.tasks.compile.JavaCompile;
 
 class StyleTaskTimer implements TaskExecutionListener {
 
@@ -55,6 +56,6 @@ class StyleTaskTimer implements TaskExecutionListener {
     }
 
     public static boolean isStyleTask(Task task) {
-        return task instanceof Checkstyle || task instanceof FindBugs;
+        return task instanceof Checkstyle || task instanceof FindBugs || task instanceof JavaCompile;
     }
 }

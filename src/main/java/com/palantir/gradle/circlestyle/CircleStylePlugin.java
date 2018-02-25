@@ -24,6 +24,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.quality.Checkstyle;
 import org.gradle.api.plugins.quality.FindBugs;
+import org.gradle.api.tasks.compile.JavaCompile;
 
 public class CircleStylePlugin implements Plugin<Project> {
 
@@ -60,6 +61,16 @@ public class CircleStylePlugin implements Plugin<Project> {
                                 timer,
                                 XmlReportFailuresSupplier.create(findbugs, new FindBugsReportHandler()),
                                 new File(circleReportsDir, "findbugs"));
+                    }
+                });
+                project.getTasks().withType(JavaCompile.class, new Action<JavaCompile>() {
+                    @Override
+                    public void execute(JavaCompile javac) {
+                        registerFinalizer(
+                                javac,
+                                timer,
+                                JavacFailuresSupplier.create(javac),
+                                new File(circleReportsDir, "javac"));
                     }
                 });
             }

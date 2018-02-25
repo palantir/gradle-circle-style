@@ -58,6 +58,33 @@ public class CircleStylePluginTests {
     }
 
     @Test
+    public void javacIntegrationTest() throws IOException {
+        copyTestFile("non-compiling-class", projectDir, "src/main/java/com/example/MyClass.java");
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.getRoot())
+                .withArguments("--stacktrace", "compileJava")
+                .buildAndFail();
+        assertThat(result.getOutput())
+                .contains("Compilation failed")
+                .contains("error: incompatible types")
+                .contains("private final int a")
+                .contains("error: cannot assign a value to final variable b")
+                .contains("b = 2")
+                .contains("uses unchecked or unsafe operations");
+
+        File report = new File(reportsDir, "javac/foobar-compileJava.xml");
+        assertThat(report).exists();
+        String reportXml = Files.asCharSource(report, UTF_8).read();
+        assertThat(reportXml)
+                .contains("incompatible types")
+                .contains("private final int a")
+                .contains("cannot assign a value to final variable b")
+                .contains("b = 2")
+                .doesNotContain("uses unchecked or unsafe operations");
+    }
+
+    @Test
     public void checkstyleIntegrationTest() throws IOException {
         copyTestFile("checkstyle-violating-class", projectDir, "src/main/java/com/example/MyClass.java");
 
