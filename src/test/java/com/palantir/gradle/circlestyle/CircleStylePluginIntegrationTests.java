@@ -38,7 +38,7 @@ import org.junit.rules.TemporaryFolder;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
 
-public class CircleStylePluginTests {
+public class CircleStylePluginIntegrationTests {
 
     @Rule public final EnvironmentVariables env = new EnvironmentVariables();
     @Rule public final TemporaryFolder projectDir = new TemporaryFolder();
@@ -52,6 +52,7 @@ public class CircleStylePluginTests {
         env.set("TEST_CLASSPATH", pluginClasspath());
 
         copyTestFile("build.gradle", projectDir, "build.gradle");
+        copyTestFile("subproject.gradle", projectDir, "subproject/build.gradle");
         copyTestFile("settings.gradle", projectDir, "settings.gradle");
         copyTestFile("checkstyle.xml", projectDir, "config/checkstyle/checkstyle.xml");
         copyTestFile("findbugsIncludeFilter.xml", projectDir, "config/findbugs/findbugsIncludeFilter.xml");
@@ -82,6 +83,46 @@ public class CircleStylePluginTests {
                 .contains("cannot assign a value to final variable b")
                 .contains("b = 2")
                 .doesNotContain("uses unchecked or unsafe operations");
+    }
+
+    @Test
+    public void junitIntegrationTest() throws IOException {
+        copyTestFile("tested-class", projectDir, "src/main/java/com/example/MyClass.java");
+        copyTestFile("tested-class-tests", projectDir, "src/test/java/com/example/MyClassTests.java");
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.getRoot())
+                .withArguments("--stacktrace", "test")
+                .buildAndFail();
+        assertThat(result.getOutput()).contains("2 tests completed, 1 failed");
+
+        File report = new File(reportsDir, "junit/test/TEST-com.example.MyClassTests.xml");
+        assertThat(report).exists();
+        String reportXml = Files.asCharSource(report, UTF_8).read();
+        assertThat(reportXml)
+                .contains("tests=\"2\"")
+                .contains("failures=\"1\"")
+                .contains("org.junit.ComparisonFailure");
+    }
+
+    @Test
+    public void junitSubprojectIntegrationTest() throws IOException {
+        copyTestFile("tested-class", projectDir, "subproject/src/main/java/com/example/MyClass.java");
+        copyTestFile("tested-class-tests", projectDir, "subproject/src/test/java/com/example/MyClassTests.java");
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.getRoot())
+                .withArguments("--stacktrace", "subproject:test")
+                .buildAndFail();
+        assertThat(result.getOutput()).contains("2 tests completed, 1 failed");
+
+        File report = new File(reportsDir, "junit/subproject/test/TEST-com.example.MyClassTests.xml");
+        assertThat(report).exists();
+        String reportXml = Files.asCharSource(report, UTF_8).read();
+        assertThat(reportXml)
+                .contains("tests=\"2\"")
+                .contains("failures=\"1\"")
+                .contains("org.junit.ComparisonFailure");
     }
 
     @Test
