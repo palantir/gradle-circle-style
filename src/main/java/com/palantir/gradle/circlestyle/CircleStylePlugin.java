@@ -25,6 +25,7 @@ import org.gradle.api.Project;
 import org.gradle.api.plugins.quality.Checkstyle;
 import org.gradle.api.plugins.quality.FindBugs;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.api.tasks.testing.Test;
 
 public class CircleStylePlugin implements Plugin<Project> {
 
@@ -43,6 +44,16 @@ public class CircleStylePlugin implements Plugin<Project> {
         rootProject.allprojects(new Action<Project>() {
             @Override
             public void execute(final Project project) {
+                project.getTasks().withType(Test.class, new Action<Test>() {
+                    @Override
+                    public void execute(Test test) {
+                        File junitReportsDir = new File(circleReportsDir, "junit");
+                        for (String component : test.getPath().substring(1).split(":")) {
+                            junitReportsDir = new File(junitReportsDir, component);
+                        }
+                        test.getReports().getJunitXml().setDestination(junitReportsDir);
+                    }
+                });
                 project.getTasks().withType(Checkstyle.class, new Action<Checkstyle>() {
                     @Override
                     public void execute(Checkstyle checkstyle) {
