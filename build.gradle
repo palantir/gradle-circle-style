@@ -44,8 +44,8 @@ pluginBundle {
     circleStylePlugin {
       displayName = 'Circle style plugin'
       id = 'com.palantir.circle.style'
-      description = 'Integrating Gradle\'s checkstyle and findbugs output into Circle'
-      tags = ['java', 'circle', 'checkstyle', 'findbugs']
+      description = 'Summarize Gradle build failures in CircleCI'
+      tags = ['java', 'circle', 'circleci', 'checkstyle', 'findbugs']
     }
   }
 }
