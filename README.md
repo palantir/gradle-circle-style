@@ -32,4 +32,6 @@ Details
 
 This plugin is enabled by the `CIRCLE_TEST_REPORTS` environment variable, set automatically on CircleCI builds. It then automatically enables XML output for Checkstyle and FindBugs plugins, and adds a finalizer task that collates their results (and any other Gradle build step failures) using the JUnit XML output that CircleCI expects.
 
+Additionally, all JUnit output is placed in the `CIRCLE_TEST_REPORTS` directory.
+
 Note that FindBugs does not support generating both HTML and XML output, so HTML output will be disabled on CircleCI builds. (Checkstyle does not have this limitation.)
