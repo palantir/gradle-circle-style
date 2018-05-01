@@ -48,6 +48,7 @@ class CheckstyleReportHandler extends ReportHandler<Checkstyle> {
                         .line(Integer.parseInt(attributes.getValue("line")))
                         .message(attributes.getValue("message"))
                         .build());
+                break;
 
             default:
                 break;
