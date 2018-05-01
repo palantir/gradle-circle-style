@@ -3,7 +3,6 @@ package com.palantir.gradle.circlestyle;
 import static java.lang.Integer.parseInt;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -39,7 +38,7 @@ class JavacFailuresSupplier implements FailuresSupplier {
     }
 
     @Override
-    public List<Failure> getFailures() throws IOException {
+    public List<Failure> getFailures() {
         List<Failure> failures = new ArrayList<>();
         Failure.Builder failureBuilder = null;
         StringBuilder details = null;

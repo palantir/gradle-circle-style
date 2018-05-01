@@ -3,7 +3,6 @@ package com.palantir.gradle.circlestyle;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.junit.Test;
 
@@ -20,14 +19,14 @@ public class JavacFailuresSupplierTest {
                     + "\n        ^                                                        ";
 
     @Test
-    public void noFailuresInEmptyOutput() throws IOException {
+    public void noFailuresInEmptyOutput() {
         String javacOutput = "";
         JavacFailuresSupplier supplier = new JavacFailuresSupplier(new StringBuilder(javacOutput));
         assertThat(supplier.getFailures()).isEmpty();
     }
 
     @Test
-    public void noFailuresInOutputWithOnlyWarnings() throws IOException {
+    public void noFailuresInOutputWithOnlyWarnings() {
         String javacOutput = "warning: [options] bootstrap class path not set in conjunction with -source 1.7\n"
                 + "Note: " + CLASS_FILE + " uses unchecked or unsafe operations.\n"
                 + "Note: Recompile with -Xlint:unchecked for details.               \n"
@@ -37,7 +36,7 @@ public class JavacFailuresSupplierTest {
     }
 
     @Test
-    public void twoFailuresInOutputWithNoWarnings() throws IOException {
+    public void twoFailuresInOutputWithNoWarnings() {
         String javacOutput = CLASS_FILE + ":" + LINE_1 + ": error: " + ERROR_1 + DETAIL_1 + "\n"
                 + CLASS_FILE + ":" + LINE_2 + ": error: " + ERROR_2 + DETAIL_2 + "\n";
         JavacFailuresSupplier supplier = new JavacFailuresSupplier(new StringBuilder(javacOutput));

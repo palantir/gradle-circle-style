@@ -25,8 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.util.List;
 
-import javax.xml.transform.TransformerException;
-
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -52,7 +50,7 @@ public class FailuresReportGeneratorTests {
     }
 
     @Test
-    public void testJavacErrors() throws TransformerException {
+    public void testJavacErrors() {
         List<Failure> failures = ImmutableList.of(
                 new Failure.Builder()
                         .file(new File(ROOT, "src/main/java/com/example/MyClass.java"))
