@@ -24,6 +24,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.quality.Checkstyle;
 import org.gradle.api.plugins.quality.FindBugs;
+import org.gradle.api.reporting.ConfigurableReport;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.testing.Test;
 
@@ -51,7 +52,7 @@ public class CircleStylePlugin implements Plugin<Project> {
                         for (String component : test.getPath().substring(1).split(":")) {
                             junitReportsDir = new File(junitReportsDir, component);
                         }
-                        test.getReports().getJunitXml().setDestination(junitReportsDir);
+                        setDestination(test.getReports().getJunitXml(), junitReportsDir);
                     }
                 });
                 project.getTasks().withType(Checkstyle.class, new Action<Checkstyle>() {
@@ -86,6 +87,16 @@ public class CircleStylePlugin implements Plugin<Project> {
                 });
             }
         });
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void setDestination(ConfigurableReport report, File destination) {
+        try {
+            report.setDestination(destination);
+        } catch (NoSuchMethodError e) {
+            // Fall back to pre-Gradle 4 method
+            report.setDestination((Object) destination);
+        }
     }
 
     private static void configureBuildFailureFinalizer(Project rootProject, String circleReportsDir) {
