@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.gradle.api.logging.LoggingManager;
 import org.gradle.api.logging.StandardOutputListener;
 import org.gradle.api.tasks.compile.JavaCompile;
 
@@ -23,7 +24,7 @@ class JavacFailuresSupplier implements FailuresSupplier {
                 errorStream.append(output);
             }
         };
-        javac.getLogging().addStandardErrorListener(listener);
+        ((LoggingManager) javac.getLogging()).addStandardErrorListener(listener);
 
         // Configure the finalizer task
         return new JavacFailuresSupplier(errorStream);
