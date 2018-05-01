@@ -16,6 +16,7 @@
 package com.palantir.gradle.circlestyle;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,7 +47,7 @@ class FailuresReportGenerator {
                             .details(
                                     failure.severity() + ": " + failure.message() + failure.details() + "\n"
                                             + (failure.source().isEmpty() ? "" : "Category: " + failure.source() + "\n")
-                                            + "File: " + rootDir.toPath().relativize(failure.file().toPath()) + "\n"
+                                            + "File: " + relativise(rootDir, failure) + "\n"
                                             + "Line: " + failure.line() + "\n")
                             .build())
                     .build();
@@ -54,6 +55,14 @@ class FailuresReportGenerator {
         }
 
         return report.build();
+    }
+
+    public static Path relativise(File rootDir, Failure failure) {
+        try {
+            return rootDir.toPath().relativize(failure.file().toPath());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Could not relativise " + failure.file() + " wrt " + rootDir, e);
+        }
     }
 
     private static String getClassName(File file) {
