@@ -68,4 +68,9 @@ class JavacFailuresSupplier implements FailuresSupplier {
         }
         return failures;
     }
+
+    @Override
+    public RuntimeException handleInternalFailure(File reportDir, RuntimeException e) {
+        return e;
+    }
 }

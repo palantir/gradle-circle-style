@@ -50,6 +50,7 @@ class CircleStyleFinalizer extends DefaultTask {
         finalizer.setStyleTaskTimer(timer);
         finalizer.setFailuresSupplier(failuresSupplier);
         finalizer.setTargetFile(new File(reportDir, task.getProject().getName() + "-" + task.getName() + ".xml"));
+        finalizer.setReportDir(reportDir);
 
         task.finalizedBy(finalizer);
     }
@@ -58,6 +59,7 @@ class CircleStyleFinalizer extends DefaultTask {
     private StyleTaskTimer styleTaskTimer;
     private FailuresSupplier failuresSupplier;
     private File targetFile;
+    private File reportDir;
 
     @Inject
     public CircleStyleFinalizer() { }
@@ -94,6 +96,14 @@ class CircleStyleFinalizer extends DefaultTask {
         this.targetFile = targetFile;
     }
 
+    public File getReportDir() {
+        return reportDir;
+    }
+
+    public void setReportDir(File reportDir) {
+        this.reportDir = reportDir;
+    }
+
     @TaskAction
     public void createCircleReport() throws IOException, TransformerException {
         if (!styleTask.getDidWork()) {
@@ -101,16 +111,27 @@ class CircleStyleFinalizer extends DefaultTask {
             return;
         }
 
-        File rootDir = getProject().getRootProject().getProjectDir();
-        String projectName = getProject().getName();
-        List<Failure> failures = failuresSupplier.getFailures();
-        long taskTimeNanos = styleTaskTimer.getTaskTimeNanos(styleTask);
+        try {
+            File rootDir = getProject().getRootProject().getProjectDir();
+            String projectName = getProject().getName();
+            List<Failure> failures = failuresSupplier.getFailures();
+            long taskTimeNanos = styleTaskTimer.getTaskTimeNanos(styleTask);
 
-        Document report = reportToXml(failuresReport(
-                rootDir, projectName, styleTask.getName(), taskTimeNanos, failures));
-        targetFile.getParentFile().mkdirs();
-        try (FileWriter writer = new FileWriter(targetFile)) {
-            XmlUtils.write(writer, report);
+            Document report = reportToXml(failuresReport(
+                    rootDir, projectName, styleTask.getName(), taskTimeNanos, failures));
+            targetFile.getParentFile().mkdirs();
+            try (FileWriter writer = new FileWriter(targetFile)) {
+                XmlUtils.write(writer, report);
+            }
+        } catch (RuntimeException e) {
+            RuntimeException modified;
+            try {
+                modified = failuresSupplier.handleInternalFailure(reportDir, e);
+            } catch (RuntimeException x) {
+                e.addSuppressed(x);
+                throw e;
+            }
+            throw modified;
         }
     }
 }

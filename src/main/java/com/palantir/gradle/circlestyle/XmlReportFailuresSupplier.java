@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 import org.gradle.api.Action;
 import org.gradle.api.Task;
@@ -41,5 +42,18 @@ class XmlReportFailuresSupplier implements FailuresSupplier {
     public List<Failure> getFailures() throws IOException {
         File sourceReport = reporting.getReports().findByName("xml").getDestination();
         return parseXml(reportHandler, new FileInputStream(sourceReport)).failures();
+    }
+
+    @Override
+    public RuntimeException handleInternalFailure(File reportDir, RuntimeException e) {
+        File rawReportsDir = new File(reportDir, UUID.randomUUID().toString());
+        rawReportsDir.mkdirs();
+        for (SingleFileReport rawReport : reporting.getReports()) {
+            if (rawReport.isEnabled()) {
+                rawReport.getDestination().renameTo(new File(rawReportsDir, rawReport.getDestination().getName()));
+            }
+        }
+        return new RuntimeException(
+                "Finalizer failed; raw report files can be found at " + rawReportsDir.getName(), e);
     }
 }
