@@ -15,57 +15,49 @@
  */
 package com.palantir.gradle.circlestyle;
 
-import java.io.File;
-
-import org.gradle.api.Action;
-import org.gradle.api.Plugin;
-import org.gradle.api.Project;
-import org.gradle.api.Task;
-import org.gradle.api.UnknownTaskException;
+import org.gradle.api.*;
 import org.gradle.api.plugins.quality.Checkstyle;
 import org.gradle.api.plugins.quality.FindBugs;
 import org.gradle.api.plugins.quality.FindBugsXmlReport;
 import org.gradle.api.reporting.SingleFileReport;
 import org.gradle.api.tasks.TaskContainer;
 
+import java.io.File;
+
 public class CircleStylePlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project rootProject) {
-        final String circleReportsDir = System.getenv("CIRCLE_TEST_REPORTS");
-        if (circleReportsDir == null) {
-            return;
-        }
-
-        configureBuildFailureFinalizer(rootProject, circleReportsDir);
-
-        final StyleTaskTimer timer = new StyleTaskTimer();
-        rootProject.getGradle().addListener(timer);
-
-        rootProject.allprojects(new Action<Project>() {
-            @Override
-            public void execute(final Project project) {
-                project.getTasks().withType(Checkstyle.class, new Action<Checkstyle>() {
-                    @Override
-                    public void execute(Checkstyle checkstyleTask) {
-                        configureCheckstyleTask(project, checkstyleTask, circleReportsDir, timer);
-                    }
-                });
-                project.getTasks().withType(FindBugs.class, new Action<FindBugs>() {
-                    @Override
-                    public void execute(FindBugs findbugsTask) {
-                        configureFindbugsTask(project, findbugsTask, circleReportsDir, timer);
-                    }
-                });
+        CircleStylePluginExtension extension = rootProject.getExtensions()
+                .create("circleStyle", CircleStylePluginExtension.class);
+        rootProject.afterEvaluate(project -> {
+            final String reportsDir = System.getenv(extension.getTestReportsEnvVariable());
+            if (reportsDir == null) {
+                return;
             }
+
+            configureBuildFailureFinalizer(rootProject, reportsDir);
+
+            final StyleTaskTimer timer = new StyleTaskTimer();
+            rootProject.getGradle().addListener(timer);
+
+            rootProject.allprojects(project1 -> {
+                project1.getTasks().withType(
+                        Checkstyle.class,
+                        checkstyleTask -> configureCheckstyleTask(project1, checkstyleTask, reportsDir, timer));
+                project1.getTasks().withType(
+                        FindBugs.class,
+                        findbugsTask -> configureFindbugsTask(project1, findbugsTask, reportsDir, timer));
+            });
         });
+
     }
 
-    private void configureBuildFailureFinalizer(Project rootProject, String circleReportsDir) {
+    private void configureBuildFailureFinalizer(Project rootProject, String reportsDir) {
         int attemptNumber = 1;
-        File targetFile = new File(new File(circleReportsDir, "gradle"), "build.xml");
+        File targetFile = new File(new File(reportsDir, "gradle"), "build.xml");
         while (targetFile.exists()) {
-            targetFile = new File(new File(circleReportsDir, "gradle"), "build" + (++attemptNumber) + ".xml");
+            targetFile = new File(new File(reportsDir, "gradle"), "build" + (++attemptNumber) + ".xml");
         }
         Integer container;
         try {
@@ -82,15 +74,10 @@ public class CircleStylePlugin implements Plugin<Project> {
     private void configureCheckstyleTask(
             final Project project,
             final Checkstyle checkstyleTask,
-            final String circleReportsDir,
+            final String reportsDir,
             final StyleTaskTimer timer) {
         // Ensure XML output is enabled
-        checkstyleTask.doFirst(new Action<Task>() {
-            @Override
-            public void execute(Task task) {
-                checkstyleTask.getReports().findByName("xml").setEnabled(true);
-            }
-        });
+        checkstyleTask.doFirst(task -> checkstyleTask.getReports().findByName("xml").setEnabled(true));
 
         // Configure the finalizer task
         CircleStyleFinalizer finalizer = createTask(
@@ -106,7 +93,7 @@ public class CircleStylePlugin implements Plugin<Project> {
         finalizer.setReporting(checkstyleTask);
         finalizer.setStyleTaskTimer(timer);
         finalizer.setTargetFile(new File(
-                new File(circleReportsDir, "checkstyle"),
+                new File(reportsDir, "checkstyle"),
                 project.getName() + "-" + checkstyleTask.getName() + ".xml"));
 
         checkstyleTask.finalizedBy(finalizer);
@@ -115,19 +102,16 @@ public class CircleStylePlugin implements Plugin<Project> {
     private void configureFindbugsTask(
             final Project project,
             final FindBugs findbugsTask,
-            final String circleReportsDir,
+            final String reportsDir,
             final StyleTaskTimer timer) {
         // Ensure XML output is enabled
-        findbugsTask.doFirst(new Action<Task>() {
-            @Override
-            public void execute(Task task) {
-                for (SingleFileReport report : findbugsTask.getReports()) {
-                    report.setEnabled(false);
-                }
-                FindBugsXmlReport xmlReport = (FindBugsXmlReport) findbugsTask.getReports().findByName("xml");
-                xmlReport.setEnabled(true);
-                xmlReport.setWithMessages(true);
+        findbugsTask.doFirst(task -> {
+            for (SingleFileReport report : findbugsTask.getReports()) {
+                report.setEnabled(false);
             }
+            FindBugsXmlReport xmlReport = (FindBugsXmlReport) findbugsTask.getReports().findByName("xml");
+            xmlReport.setEnabled(true);
+            xmlReport.setWithMessages(true);
         });
 
         // Configure the finalizer task
@@ -144,7 +128,7 @@ public class CircleStylePlugin implements Plugin<Project> {
         finalizer.setReporting(findbugsTask);
         finalizer.setStyleTaskTimer(timer);
         finalizer.setTargetFile(new File(
-                new File(circleReportsDir, "findbugs"),
+                new File(reportsDir, "findbugs"),
                 project.getName() + "-" + findbugsTask.getName() + ".xml"));
 
         findbugsTask.finalizedBy(finalizer);

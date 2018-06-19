@@ -11,7 +11,7 @@ repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 1.7
+sourceCompatibility = 1.8
 
 dependencies {
   compile gradleApi()
