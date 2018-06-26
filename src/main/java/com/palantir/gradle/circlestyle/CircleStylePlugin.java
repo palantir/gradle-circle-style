@@ -15,46 +15,51 @@
  */
 package com.palantir.gradle.circlestyle;
 
-import java.io.File;
-
-import org.gradle.api.Action;
-import org.gradle.api.Plugin;
-import org.gradle.api.Project;
-import org.gradle.api.Task;
-import org.gradle.api.UnknownTaskException;
+import org.gradle.api.*;
 import org.gradle.api.plugins.quality.Checkstyle;
 import org.gradle.api.plugins.quality.FindBugs;
 import org.gradle.api.plugins.quality.FindBugsXmlReport;
 import org.gradle.api.reporting.SingleFileReport;
 import org.gradle.api.tasks.TaskContainer;
 
+import java.io.File;
+
 public class CircleStylePlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project rootProject) {
-        final String circleReportsDir = System.getenv("CIRCLE_TEST_REPORTS");
-        if (circleReportsDir == null) {
-            return;
-        }
+        final CircleStylePluginExtension extension = rootProject.getExtensions()
+                .create("circleStyle", CircleStylePluginExtension.class);
 
-        configureBuildFailureFinalizer(rootProject, circleReportsDir);
+        rootProject.afterEvaluate(new Action<Project>() {
 
-        final StyleTaskTimer timer = new StyleTaskTimer();
-        rootProject.getGradle().addListener(timer);
-
-        rootProject.allprojects(new Action<Project>() {
             @Override
-            public void execute(final Project project) {
-                project.getTasks().withType(Checkstyle.class, new Action<Checkstyle>() {
+            public void execute(Project evaluatedRootProject) {
+                final String circleReportsDir = System.getenv(extension.getTestReportsEnvVariable());
+                if (circleReportsDir == null) {
+                    return;
+                }
+
+                configureBuildFailureFinalizer(evaluatedRootProject, circleReportsDir);
+
+                final StyleTaskTimer timer = new StyleTaskTimer();
+                evaluatedRootProject.getGradle().addListener(timer);
+
+                evaluatedRootProject.allprojects(new Action<Project>() {
                     @Override
-                    public void execute(Checkstyle checkstyleTask) {
-                        configureCheckstyleTask(project, checkstyleTask, circleReportsDir, timer);
-                    }
-                });
-                project.getTasks().withType(FindBugs.class, new Action<FindBugs>() {
-                    @Override
-                    public void execute(FindBugs findbugsTask) {
-                        configureFindbugsTask(project, findbugsTask, circleReportsDir, timer);
+                    public void execute(final Project project) {
+                        project.getTasks().withType(Checkstyle.class, new Action<Checkstyle>() {
+                            @Override
+                            public void execute(Checkstyle checkstyleTask) {
+                                configureCheckstyleTask(project, checkstyleTask, circleReportsDir, timer);
+                            }
+                        });
+                        project.getTasks().withType(FindBugs.class, new Action<FindBugs>() {
+                            @Override
+                            public void execute(FindBugs findbugsTask) {
+                                configureFindbugsTask(project, findbugsTask, circleReportsDir, timer);
+                            }
+                        });
                     }
                 });
             }

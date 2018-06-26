@@ -15,18 +15,8 @@
  */
 package com.palantir.gradle.circlestyle;
 
-import static com.google.common.base.Charsets.UTF_8;
-import static com.palantir.gradle.circlestyle.TestCommon.copyTestFile;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.base.Joiner;
+import com.google.common.io.Files;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
 import org.junit.Before;
@@ -35,8 +25,17 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.rules.TemporaryFolder;
 
-import com.google.common.base.Joiner;
-import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.google.common.base.Charsets.UTF_8;
+import static com.palantir.gradle.circlestyle.TestCommon.copyTestFile;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class CircleStylePluginTests {
 
@@ -59,6 +58,26 @@ public class CircleStylePluginTests {
 
     @Test
     public void checkstyleIntegrationTest() throws IOException {
+        copyTestFile("checkstyle-violating-class", projectDir, "src/main/java/com/example/MyClass.java");
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(projectDir.getRoot())
+                .withArguments("--stacktrace", "checkstyleMain")
+                .buildAndFail();
+        assertThat(result.getOutput()).contains("Checkstyle rule violations were found");
+
+        File report = new File(reportsDir, "checkstyle/foobar-checkstyleMain.xml");
+        assertThat(report).exists();
+        String reportXml = Files.asCharSource(report, UTF_8).read();
+        assertThat(reportXml).contains("Name 'a_constant' must match pattern");
+    }
+
+    @Test
+    public void checkstyleIntegrationTestWithOverridenEnvVariableName() throws IOException {
+        copyTestFile("build.gradle_envVariableOverride", projectDir, "build.gradle");
+        env.set("CIRCLE_TEST_REPORTS", null);
+        env.set("OTHER_TEST_REPORTS", new File(projectDir.getRoot(), "circle/reports").toString());
+
         copyTestFile("checkstyle-violating-class", projectDir, "src/main/java/com/example/MyClass.java");
 
         BuildResult result = GradleRunner.create()
