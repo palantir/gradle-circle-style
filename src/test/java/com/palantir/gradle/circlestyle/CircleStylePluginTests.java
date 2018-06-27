@@ -15,6 +15,18 @@
  */
 package com.palantir.gradle.circlestyle;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.palantir.gradle.circlestyle.TestCommon.copyTestFile;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
 import org.gradle.testkit.runner.BuildResult;
@@ -24,18 +36,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.rules.TemporaryFolder;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.google.common.base.Charsets.UTF_8;
-import static com.palantir.gradle.circlestyle.TestCommon.copyTestFile;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class CircleStylePluginTests {
 
