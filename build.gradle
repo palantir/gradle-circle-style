@@ -17,7 +17,8 @@ sourceCompatibility = 1.7
 dependencies {
   compile gradleApi()
 
-  processor 'org.inferred:freebuilder:1.14.6'
+  annotationProcessor 'org.inferred:freebuilder:1.14.6'
+  compileOnly 'org.inferred:freebuilder:1.14.6'
 
   testCompile gradleTestKit()
   testCompile 'com.github.stefanbirkner:system-rules:1.16.0'
