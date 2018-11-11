@@ -52,6 +52,8 @@ if (System.env.CIRCLE_TAG) {
   version = System.env.CIRCLE_TAG.replaceAll('^v', '')
 }
 
+tasks.publish.dependsOn 'publishPlugins'
+
 pluginBundle {
   website = 'https://github.com/palantir/gradle-circle-style'
   vcsUrl = 'https://github.com/palantir/gradle-circle-style'
@@ -82,12 +84,8 @@ task setupPublishProperties {
   }
 }
 
-// Download dependencies to Gradle's cache
-task resolveDependencies {
-  doLast {
-    project.rootProject.allprojects.each { subProject ->
-      subProject.buildscript.configurations.each { if (it.canBeResolved) it.resolve() }
-      subProject.configurations.each { if (it.canBeResolved) it.resolve() }
-    }
-  }
+tasks.publishPlugins.dependsOn 'setupPublishProperties'
+
+publishPlugins.onlyIf {
+  System.env.CIRCLE_TAG
 }
