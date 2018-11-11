@@ -1,0 +1,9 @@
+org.inferred:freebuilder = 1.14.6
+com.github.stefanbirkner:system-rules = 1.16.0
+com.google.guava:guava = 23.1-jre
+
+# test dependencies
+junit:junit = 4.12
+org.assertj:assertj-core = 2.9.0
+org.mockito:mockito-core = 2.15.0
+me.nallar.whocalled:WhoCalled = 1.1

@@ -1,15 +1,30 @@
-plugins {
-  id 'java'
-  id 'eclipse'
-  id 'idea'
-  id 'com.gradle.plugin-publish' version '0.9.7'
-  id 'com.palantir.circle.style' version '1.2.0-rc3'
-  id 'org.inferred.processors' version '1.2.15'
+buildscript {
+  repositories {
+    jcenter()
+    maven { url  'https://palantir.bintray.com/releases' }
+  }
+  dependencies {
+    classpath 'com.palantir.baseline:gradle-baseline-java:0.38.1'
+  }
 }
+
+plugins {
+  id 'com.gradle.plugin-publish' version '0.10.0'
+  id 'com.palantir.circle.style' version '1.2.0-rc3'
+  id 'org.inferred.processors' version '2.0.0'
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'java-gradle-plugin'
+apply plugin: 'maven-publish'
+apply plugin: 'com.palantir.baseline'
 
 repositories {
     jcenter()
     mavenCentral()
+    maven { url 'https://palantir.bintray.com/releases' }
 }
 
 sourceCompatibility = 1.7
@@ -17,15 +32,16 @@ sourceCompatibility = 1.7
 dependencies {
   compile gradleApi()
 
-  processor 'org.inferred:freebuilder:1.14.6'
+  annotationProcessor 'org.inferred:freebuilder'
+  compileOnly 'org.inferred:freebuilder'
 
   testCompile gradleTestKit()
-  testCompile 'com.github.stefanbirkner:system-rules:1.16.0'
-  testCompile 'com.google.guava:guava:23.0-android'
-  testCompile 'junit:junit:4.12'
-  testCompile 'org.assertj:assertj-core:2.9.0'
-  testCompile 'org.mockito:mockito-core:2.15.0'
-  testCompile 'me.nallar.whocalled:WhoCalled:1.1'
+  testCompile 'com.github.stefanbirkner:system-rules'
+  testCompile 'com.google.guava:guava'
+  testCompile 'junit:junit'
+  testCompile 'org.assertj:assertj-core'
+  testCompile 'org.mockito:mockito-core'
+  testCompile 'me.nallar.whocalled:WhoCalled'
 }
 
 // Extra validation steps
@@ -60,7 +76,6 @@ String envOrThrow(String key) {
 
 // Read publication secrets from environment
 task setupPublishProperties {
-  tasks.publishPlugins.dependsOn it
   doLast {
     System.properties.setProperty('gradle.publish.key', envOrThrow('gradlePublishKey'))
     System.properties.setProperty('gradle.publish.secret', envOrThrow('gradlePublishSecret'))
