@@ -17,8 +17,8 @@ package com.palantir.gradle.circlestyle;
 
 import static com.palantir.gradle.circlestyle.CircleStyleFinalizer.registerFinalizer;
 
+import com.google.common.base.Splitter;
 import java.io.File;
-
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -48,7 +48,7 @@ public class CircleStylePlugin implements Plugin<Project> {
                     @Override
                     public void execute(Test test) {
                         File junitReportsDir = new File(circleReportsDir, "junit");
-                        for (String component : test.getPath().substring(1).split(":")) {
+                        for (String component : Splitter.on(test.getPath().substring(1)).split(":")) {
                             junitReportsDir = new File(junitReportsDir, component);
                         }
                         test.getReports().getJunitXml().setDestination(junitReportsDir);

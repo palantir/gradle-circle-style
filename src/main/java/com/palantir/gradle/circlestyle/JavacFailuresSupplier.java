@@ -2,13 +2,13 @@ package com.palantir.gradle.circlestyle;
 
 import static java.lang.Integer.parseInt;
 
+import com.google.common.base.Splitter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.gradle.api.logging.StandardOutputListener;
 import org.gradle.api.tasks.compile.JavaCompile;
 
@@ -42,7 +42,7 @@ class JavacFailuresSupplier implements FailuresSupplier {
         List<Failure> failures = new ArrayList<>();
         Failure.Builder failureBuilder = null;
         StringBuilder details = null;
-        for (String line : errorStream.toString().split("\n")) {
+        for (String line : Splitter.on("\n").split(errorStream.toString())) {
             if (failureBuilder != null) {
                 if (line.startsWith(" ")) {
                     details.append("\n").append(line);
